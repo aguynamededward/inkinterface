@@ -1,0 +1,47 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e774594f03d6131489d495d5c3e93fdc, type: 3}
+  m_Name: ScreenFadeTextAnimationCurve
+  m_EditorClassIdentifier: 
+  acCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0.26679087
+      outSlope: 0
+      tangentMode: 65
+      weightedMode: 2
+      inWeight: 0
+      outWeight: 0.276266
+    - serializedVersion: 3
+      time: 0.8832556
+      value: 0
+      inSlope: 0.04780139
+      outSlope: 1.3773366
+      tangentMode: 1
+      weightedMode: 2
+      inWeight: 0.1804225
+      outWeight: 0.5812945
+    - serializedVersion: 3
+      time: 1
+      value: 1
+      inSlope: 78.40624
+      outSlope: 64.67495
+      tangentMode: 1
+      weightedMode: 1
+      inWeight: 0.027772572
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
