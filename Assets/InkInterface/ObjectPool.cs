@@ -103,6 +103,15 @@ public static class ObjectPool<T> where T : Component, IObjectPoolElement
         }
     }
     
+    public static void ReturnAllListItemsToPool(List<T> list)
+    {
+        foreach(T item in list)
+        {
+            if (objectPoolShutdownCallbackDictionary.ContainsKey(item)) ReturnToObjectPool(item);
+        }
+    }
+
+
 }
 
 

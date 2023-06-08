@@ -15,18 +15,28 @@ public class InkEngine
         Choice_Point,
         End
     }
+
     
+
     private State state = State.None;
 
     private TextAsset inkJSONAsset;
     private Story story;
 
+    private InkChoicePoint currentChoicePoint;
+    private bool isCurrentChoiceInitialized;
+
     private bool isStoryInitialized = false;
+    /// <summary>
+    /// Did we already generate the choices information for this point?
+    /// </summary>
+
 
     public void LoadNewStory(TextAsset _inkStory)
     {
         inkJSONAsset = _inkStory;
         isStoryInitialized = false;
+        isCurrentChoiceInitialized = false;
         state = State.Uninitialized;
     }
 
@@ -34,6 +44,7 @@ public class InkEngine
     {
         story = new Story(inkJSONAsset.text);
         isStoryInitialized = true;
+        isCurrentChoiceInitialized = false;
         state = IdentifyCurrentState();
     }
 
@@ -57,6 +68,7 @@ public class InkEngine
         }
 
         state = IdentifyCurrentState();
+        isCurrentChoiceInitialized = false;
 
         return sentence;
     }
@@ -65,15 +77,33 @@ public class InkEngine
     {
         if (isStoryInitialized == false || story.currentChoices.Count < 1) return null;
 
-        int totalChoices = story.currentChoices.Count;
-
-        InkChoicePoint choicePoint = new InkChoicePoint();
-        for(var q = 0; q < totalChoices; q++)
+        if (isCurrentChoiceInitialized == false)
         {
-            choicePoint.AddChoice(story.currentChoices[q].text);
-        }
+            int totalChoices = story.currentChoices.Count;
 
-        return choicePoint;
+            currentChoicePoint = new InkChoicePoint();
+            InkParagraph choice;
+            int totalTags;
+            for (var q = 0; q < totalChoices; q++)
+            {
+                choice = new InkParagraph(story.currentChoices[q].text, q);
+
+                if(story.currentChoices[q].tags != null)
+                {
+                    totalTags = story.currentChoices[q].tags.Count;
+
+                    for (var j = 0; j < totalTags; j++)
+                    {
+                        choice.AddTag(story.currentChoices[q].tags[j]);
+                    }
+                }
+
+                currentChoicePoint.AddChoice(choice);
+            }
+
+            isCurrentChoiceInitialized = true;
+        }
+        return currentChoicePoint;
     }
 
     public void SelectChoice(int choiceIndex)
@@ -87,6 +117,8 @@ public class InkEngine
         story.ChooseChoiceIndex(choiceIndex);
 
         state = IdentifyCurrentState();
+        
+        isCurrentChoiceInitialized = false;
     }
 
 
@@ -106,11 +138,18 @@ public class InkEngine
 
 public class InkParagraph
 {
-   
+
     public InkParagraph(string _text)
     {
         text = _text;
         tags = new List<string>();
+        choiceIndex = -1;
+    }
+    public InkParagraph(string _text, int _choiceIndex)
+    {
+        text = _text;
+        tags = new List<string>();
+        choiceIndex = _choiceIndex;
     }
 
     public void AddTag(string _tag)
@@ -119,29 +158,38 @@ public class InkParagraph
     }
     public string text;
     public List<string> tags;
+
+    public int GetChoiceIndex()
+    {
+        return choiceIndex;
+    }
+
+    int choiceIndex;
+    public bool IsChoice()
+    {
+        return choiceIndex > -1;
+    }
 }
 
-public class InkChoicePoint
+    public class InkChoicePoint
 {
-    List<string> choices;
+    List<InkParagraph> choices;
     int selectedIndex = -1;
 
     public InkChoicePoint()
     {
-        choices = new List<string>();
+        choices = new List<InkParagraph>();
         selectedIndex = -1;
     }
 
-    public void AddChoice(string _choice)
+    public void AddChoice(InkParagraph _choice)
     {
         choices.Add(_choice);
     }
 
-    public List<string> GetChoices()
+    public List<InkParagraph> GetChoices()
     {
         return choices;
     }
-
-
 }
 

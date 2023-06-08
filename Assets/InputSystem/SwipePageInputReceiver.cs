@@ -16,11 +16,13 @@ public class SwipePageInputReceiver : InputSOReceiver
     public bool activated = false;
     public bool moving = false;
     public bool readyToSwipe = false;
+    [SerializeField] private Transform parentObject;
 
     private Vector3 homePosition;
     private Quaternion homeRotation;
     private Vector3 offsetPosition;
     private Vector3 baseAngle;
+
     
     public void Setup(Action _cb)
     {
@@ -33,8 +35,8 @@ public class SwipePageInputReceiver : InputSOReceiver
     {
         if (!activated || moving) return;
         moving = false;
-        homePosition = transform.position;
-        homeRotation = transform.rotation;
+        homePosition = parentObject.transform.position;
+        homeRotation = parentObject.transform.rotation;
 
         Vector3 _pos = FormatMousePositionToWorldPosition(_input.position);
         offsetPosition = _pos;
@@ -60,19 +62,19 @@ public class SwipePageInputReceiver : InputSOReceiver
     }
     public void MoveToOffscreenPosition()
     {
-        Vector3 direction = (transform.position - homePosition);
+        Vector3 direction = (parentObject.transform.position - homePosition);
         direction *= 10f;
 
         SetMoving(true);
-        transform.DOMove(transform.position + direction, 0.5f).SetEase(Ease.InQuint).OnComplete(RunCallback);
+        parentObject.transform.DOMove(parentObject.transform.position + direction, 0.5f).SetEase(Ease.InQuint).OnComplete(RunCallback);
         DOTween.To(() => ScreenIndicatorPercent.value, x => ScreenIndicatorPercent.value = x, 0, 0.5f);
     }
     
     public void MoveToOriginalPosition()
     {
         SetMoving(true);
-        transform.DOMove(homePosition, 0.5f).SetEase(Ease.OutQuint).OnComplete(() => { SetMoving(false); });
-        transform.DORotate(homeRotation.eulerAngles, 0.5f).SetEase(Ease.OutQuint);
+        parentObject.transform.DOMove(homePosition, 0.5f).SetEase(Ease.OutQuint).OnComplete(() => { SetMoving(false); });
+        parentObject.transform.DORotate(homeRotation.eulerAngles, 0.5f).SetEase(Ease.OutQuint);
 
         DOTween.To(() => ScreenIndicatorPercent.value, x => ScreenIndicatorPercent.value = x, 0, 0.5f);
 
@@ -88,8 +90,8 @@ public class SwipePageInputReceiver : InputSOReceiver
     [ContextMenu("Reset Position")]
     public void ResetPosition()
     {
-        transform.position = homePosition;
-        transform.rotation = homeRotation;
+        parentObject.transform.position = homePosition;
+        parentObject.transform.rotation = homeRotation;
         SetActivated(true);
         SetMoving(false);
     }
@@ -127,9 +129,9 @@ public class SwipePageInputReceiver : InputSOReceiver
                                                             // as we approach it
         DebugAngle = _newAngle;
 
-        transform.rotation = homeRotation * Quaternion.AngleAxis(_newAngle, Vector3.forward);
+        parentObject.transform.rotation = homeRotation * Quaternion.AngleAxis(_newAngle, Vector3.forward);
 
-        transform.position = _pos;
+        parentObject.transform.position = _pos;
 
         readyToSwipe = _input.absoluteDistance >= distanceToSwipe;
 
