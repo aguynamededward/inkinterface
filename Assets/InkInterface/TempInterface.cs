@@ -44,7 +44,7 @@ public class TempInterface : InputSOReceiver
     private void GetAllAvailableChoices()
     {
         if (inkEngine.GetCurrentState() != InkEngine.State.Choice_Point) return;
-   
+
         ObjectPool<InkTextObject>.ReturnAllListItemsToPool(inkChoiceObjects);
         inkChoiceObjects.Clear();
 
@@ -52,13 +52,20 @@ public class TempInterface : InputSOReceiver
 
         if (choices == null) { Debug.LogWarning("Error: No choices available."); return; }
 
+        StartCoroutine(ProcessAllAvailableChoices(choices));
+    }
+
+    private IEnumerator ProcessAllAvailableChoices(List<InkParagraph> choices)
+    {
         int totalChoices = choices.Count;
 
         InkTextObject inkTextObj;
         InkParagraph _nextPar;
         InkTextObject _prevTextObj = null;
-        for(var q = 0; q < totalChoices;q++)
+        for (var q = 0; q < totalChoices; q++)
         {
+            if(q != 0) yield return 0;
+
             inkTextObj = ObjectPool<InkTextObject>.GetPoolObject(textSceneParent, inkTextObjectPrefab);
             //inkTextObjects.Add(inkTextObj); We keep text separate from choices
             inkChoiceObjects.Add(inkTextObj);
@@ -66,13 +73,13 @@ public class TempInterface : InputSOReceiver
             _nextPar = choices[q];
             inkTextObj.Init(_nextPar);
 
-            if(_prevTextObj != null)
+            if (_prevTextObj != null)
             {
                 inkTextObj.SetLocalPosition(new Vector3(inkTextObj.transform.localPosition.x, _prevTextObj.GetBottomOfText(), inkTextObj.transform.localPosition.z));
             }
 
             inkTextObj.ShowText();
-            
+
             _prevTextObj = inkTextObj;
         }
 

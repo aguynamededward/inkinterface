@@ -6,14 +6,15 @@ using System;
 
 public class InkTextObject : MonoBehaviour,IObjectPoolElement
 {
-    [SerializeField] TextMeshPro textmeshPro;
-    private RectTransform rectTransform;
+    [SerializeField] protected TextMeshPro textmeshPro;
+    protected RectTransform rectTransform;
     InkParagraph inkParagraph;
 
     bool textVisible = false;
     private void Awake()
     {
         rectTransform = GetComponent<RectTransform>();
+        //textmeshPro.autoSizeTextContainer = true;
     }
     
     private void OnDestroy()
@@ -27,6 +28,11 @@ public class InkTextObject : MonoBehaviour,IObjectPoolElement
         textmeshPro.text = _inkPar.text;
         inkParagraph = _inkPar;
         gameObject.SetActive(true);
+
+
+        textObjectsToBeUpdated.Add(this);
+
+
     }
 
     public void ShowText()
@@ -70,13 +76,44 @@ public class InkTextObject : MonoBehaviour,IObjectPoolElement
 
     public float GetBottomOfText()
     {
-        return rectTransform.rect.yMax;
+        return textmeshPro.bounds.size.y;
     }
 
     public void SetLocalPosition(Vector3 _localPosition)
     {
         transform.localPosition = _localPosition;
     }
+
+    private static bool adjustingTextBounds;
+    private static List<InkTextObject> textObjectsToBeUpdated = new List<InkTextObject>();
+    static IEnumerator AdjustTextBounds()
+    {
+        yield return 0;
+
+        if(textObjectsToBeUpdated.Count < 1)
+        {
+            adjustingTextBounds = false;
+            yield break;
+        }
+        int objectsTotal = textObjectsToBeUpdated.Count;
+
+        InkTextObject inkTestObj;
+        
+        for(var q = objectsTotal - 1; q >= 0; q--)
+        {
+            inkTestObj = textObjectsToBeUpdated[q];
+            Bounds bounds = inkTestObj.textmeshPro.textBounds;
+
+            float mag = inkTestObj.rectTransform.sizeDelta.magnitude;
+            inkTestObj.rectTransform.sizeDelta = new Vector2(bounds.size.normalized.x * mag, bounds.size.normalized.y * mag);
+
+            textObjectsToBeUpdated.RemoveAt(q);
+        }
+
+        adjustingTextBounds = false;
+    }
+
+
 
     #region Pool Methods
     public void PoolShutdown()
