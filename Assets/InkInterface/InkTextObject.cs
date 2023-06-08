@@ -65,7 +65,13 @@ public class InkTextObject : MonoBehaviour,IObjectPoolElement
         if (textVisible == false) return false;
 
         Vector2 localInputPosition = rectTransform.InverseTransformPoint(inputScreenPosition);
-        bool amInsideme = rectTransform.rect.Contains(localInputPosition, true);
+        //bool amInsideme = rectTransform.rect.Contains(localInputPosition, true);
+        //bool amInsideme = textmeshPro.bounds.Contains(localInputPosition);
+        Bounds tmpBounds = textmeshPro.textBounds;
+        bool amInsideme = localInputPosition.x < tmpBounds.max.x &&
+                            localInputPosition.x > tmpBounds.min.x &&
+                            localInputPosition.y < tmpBounds.max.y &&
+                            localInputPosition.y > tmpBounds.min.y;
         return amInsideme;
     }
 
@@ -113,7 +119,12 @@ public class InkTextObject : MonoBehaviour,IObjectPoolElement
         adjustingTextBounds = false;
     }
 
+    private void Update()
+    {
+        Debug.DrawLine(textmeshPro.bounds.min + rectTransform.position, textmeshPro.bounds.max + rectTransform.position, Color.gray);
+        Debug.DrawLine(textmeshPro.textBounds.min + rectTransform.position, textmeshPro.textBounds.max + rectTransform.position, Color.red);
 
+    }
 
     #region Pool Methods
     public void PoolShutdown()
