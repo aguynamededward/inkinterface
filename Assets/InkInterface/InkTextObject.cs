@@ -11,8 +11,8 @@ public class InkTextObject : MonoBehaviour,IObjectPoolElement
 
     void Start()
     {
-        textmeshPro.text = ""; // Clear text by default
-        ObjectPool<InkTextObject>.AddToPool(this,PoolShutdown);
+        HideText();
+        InitInPool();
     }
 
     private void OnDestroy()
@@ -49,4 +49,8 @@ public class InkTextObject : MonoBehaviour,IObjectPoolElement
         gameObject.SetActive(false); // Later, we'll do fade out of text
     }
 
+    public void InitInPool()
+    {
+        ObjectPool<InkTextObject>.AddToPool(this, PoolShutdown);
+    }
 }

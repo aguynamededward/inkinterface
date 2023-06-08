@@ -1,7 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using Ink.Runtime;
 
 public class TempInterface : InputSOReceiver
 {
@@ -23,8 +22,6 @@ public class TempInterface : InputSOReceiver
 
     public void NextStep()
     {
-        if (currentTextIndex < totalText) return;
-
         if(inkEngine.GetCurrentState() == InkEngine.State.Display_Next_Line)
         {
             ObjectPool<InkTextObject>.ReturnAllObjectsToPool();

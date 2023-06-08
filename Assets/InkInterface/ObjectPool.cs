@@ -4,6 +4,7 @@ using UnityEngine;
 
 public interface IObjectPoolElement
 {
+    public abstract void InitInPool();
     public abstract void PoolShutdown();
 }
 
@@ -30,7 +31,7 @@ public static class ObjectPool<T> where T : Component, IObjectPoolElement
 
     public static void AddToPool(T poolObject, ObjectPoolOnShutdown shutdownCallback)
     {
-        if (objectPool.Contains(poolObject) == false)
+        if (objectPoolShutdownCallbackDictionary.ContainsKey(poolObject) == false)
         {
             objectPool.Add(poolObject);
             poolObject.transform.SetParent(parentObject.transform);
@@ -58,6 +59,7 @@ public static class ObjectPool<T> where T : Component, IObjectPoolElement
         }
         
         T inkTextObject = GameObject.Instantiate(prefab,sceneParent).GetComponent<T>();
+        inkTextObject.InitInPool();
 
         return PopFromObjectPool(sceneParent);
     }
