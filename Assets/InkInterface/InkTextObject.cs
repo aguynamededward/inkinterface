@@ -5,11 +5,13 @@ using TMPro;
 
 public class InkTextObject : MonoBehaviour,IObjectPoolElement
 {
-    [SerializeField] TextMeshPro text;
+    [SerializeField] TextMeshPro textmeshPro;
+
+    InkParagraph myInkPar;
 
     void Start()
     {
-        text.text = ""; // Clear text by default
+        textmeshPro.text = ""; // Clear text by default
         ObjectPool<InkTextObject>.AddToPool(this,PoolShutdown);
     }
 
@@ -18,14 +20,32 @@ public class InkTextObject : MonoBehaviour,IObjectPoolElement
         ObjectPool<InkTextObject>.RemoveFromPool(this);
     }
 
-    public void Init(string _textString)
+    public void Init(InkParagraph _inkPar)
     {
-        text.text = _textString;
+        HideText();
+        textmeshPro.text = _inkPar.text;
+        myInkPar = _inkPar;
         gameObject.SetActive(true);
     }
 
+    public void ShowText()
+    {
+        Color c = textmeshPro.color;
+        c.a = 1f;
+        textmeshPro.color = c;
+    }
+
+    public void HideText()
+    {
+        Color c = textmeshPro.color;
+        c.a = 0f;
+        textmeshPro.color = c;
+    }
+
+
     public void PoolShutdown()
     {
+        HideText();
         gameObject.SetActive(false); // Later, we'll do fade out of text
     }
 

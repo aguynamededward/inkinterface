@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class InputSOReceiver : MonoBehaviour
+public abstract class InputSOReceiver : MonoBehaviour
 {
     protected static Camera _cameraMain;
     public static Camera cameraMain
@@ -21,7 +21,7 @@ public class InputSOReceiver : MonoBehaviour
 
     public float defaultCameraDistance = 17f;
 
-    [SerializeField] InputSO input;
+    [SerializeField] protected InputSO input;
 
     protected void RegisterInput(InputSO _input)
     {
@@ -37,20 +37,11 @@ public class InputSOReceiver : MonoBehaviour
         _input.OnInputEnd += OnInputEnd;
     }
 
-    public virtual void OnInputStart(object o, InputSOData _input)
-    {
-        Debug.Log("Unimplemented OnInputStart on " + gameObject.name + "." + this + " (InputSOReceiver)");
-    }
+    public abstract void OnInputStart(object sendingSO, InputSOData _input);
 
-    public virtual void OnInputEnd(object o, InputSOData _input)
-    {
-        Debug.Log("Unimplemented OnInputEnd on " + gameObject.name + "." + this + " (InputSOReceiver)");
-    }
+    public abstract void OnInputEnd(object sendingSO, InputSOData _input);
 
-    public virtual void OnInputUpdate(object o, InputSOData _input)
-    {
-        Debug.Log("Unimplemented OnInputContinue on " + gameObject.name + "." + this + " (InputSOReceiver)");
-    }
+    public abstract void  OnInputUpdate(object sendingSO, InputSOData _input);
 
     public virtual void OnEnable()
     {

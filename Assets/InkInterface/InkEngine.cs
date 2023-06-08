@@ -30,7 +30,7 @@ public class InkEngine
         state = State.Uninitialized;
     }
 
-    private void StartStory()
+    public void InitializeStory()
     {
         story = new Story(inkJSONAsset.text);
         isStoryInitialized = true;
@@ -42,11 +42,11 @@ public class InkEngine
         return state;
     }
 
-    public InkSentence GetNextLine()
+    public InkParagraph GetNextLine()
     {
         if (isStoryInitialized == false || story.canContinue == false) return null;
 
-        InkSentence sentence = new InkSentence(story.Continue());
+        InkParagraph sentence = new InkParagraph(story.Continue());
         if(story.currentTags.Count > 0)
         {
             int totalTags = story.currentTags.Count;
@@ -104,10 +104,10 @@ public class InkEngine
     }
 }
 
-public class InkSentence
+public class InkParagraph
 {
    
-    public InkSentence(string _text)
+    public InkParagraph(string _text)
     {
         text = _text;
         tags = new List<string>();
