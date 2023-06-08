@@ -892,6 +892,7 @@ MonoBehaviour:
   input: {fileID: 11400000, guid: e68e0e1edbaa74c48b2925f870f2fadd, type: 2}
   inkTextObjectPrefab: {fileID: 2211373429919389279, guid: 55bf5d0d254d4f1409b8638ed7069ae8,
     type: 3}
+  loopNumber: 10000
 --- !u!4 &1369533792
 Transform:
   m_ObjectHideFlags: 0
@@ -900,7 +901,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1369533790}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 1.8242772, y: -3.709101, z: 19.576935}
+  m_LocalPosition: {x: 1.8242772, y: -3.709101, z: 2.74}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []

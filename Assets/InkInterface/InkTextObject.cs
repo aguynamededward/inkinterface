@@ -59,19 +59,75 @@ public class InkTextObject : MonoBehaviour,IObjectPoolElement
         textVisible = false;
     }
 
-    public bool CheckForClick(Vector3 inputScreenPosition)
+    public bool CheckForClick(Vector3 inputWorldPosition)
     {
         if (inkParagraph.IsChoice() == false) return false;
         if (textVisible == false) return false;
 
-        Vector2 localInputPosition = rectTransform.InverseTransformPoint(inputScreenPosition);
+        //Vector2 localInputPosition = rectTransform.InverseTransformPoint(inputWorldPosition);
+        
+        // trying with textmeshpro recttransform
+        localInputPosition = textmeshPro.rectTransform.InverseTransformPoint(inputWorldPosition);
+        mouseWorldPosition = inputWorldPosition;
         //bool amInsideme = rectTransform.rect.Contains(localInputPosition, true);
         //bool amInsideme = textmeshPro.bounds.Contains(localInputPosition);
         Bounds tmpBounds = textmeshPro.textBounds;
-        bool amInsideme = localInputPosition.x < tmpBounds.max.x &&
-                            localInputPosition.x > tmpBounds.min.x &&
-                            localInputPosition.y < tmpBounds.max.y &&
-                            localInputPosition.y > tmpBounds.min.y;
+        tmpBounds.max += textmeshPro.rectTransform.position;
+        tmpBounds.min += textmeshPro.rectTransform.position;
+        bool amInsideme = inputWorldPosition.x < tmpBounds.max.x &&
+                            inputWorldPosition.x > tmpBounds.min.x &&
+                            inputWorldPosition.y < tmpBounds.max.y &&
+                            inputWorldPosition.y > tmpBounds.min.y;
+
+        tempBounds = tmpBounds;
+        Debug.Log("Original mouse position " + inputWorldPosition + "\nConverted to Local: " + localInputPosition + "\ntmpBounds: " + tmpBounds.max + " / " + tmpBounds.min);
+
+        return amInsideme;
+    }
+    Vector2 localInputPosition;
+    Vector3 mouseWorldPosition;
+    Bounds tempBounds;
+    private void OnDrawGizmos()
+    {
+        Gizmos.color = Color.magenta;
+        Gizmos.DrawSphere(localInputPosition, 0.5f);
+
+        Gizmos.color = Color.green;
+        Gizmos.DrawSphere(mouseWorldPosition, 0.5f);
+
+        Gizmos.color = Color.magenta;
+        Gizmos.DrawLine(tempBounds.max, tempBounds.min);
+    }
+    public bool CheckForClickOnCharacter(Vector2 inputScreenPosition,Camera camera)
+    {
+        if (inkParagraph.IsChoice() == false) return false;
+        if (textVisible == false) return false;
+
+        if (!TMP_TextUtilities.IsIntersectingRectTransform(textmeshPro.rectTransform, inputScreenPosition, camera)) return false;
+
+        int charClicked = TMP_TextUtilities.FindIntersectingCharacter(textmeshPro, inputScreenPosition, camera, true);
+        bool amInsideme = charClicked != -1;
+
+        //if(amInsideme) Debug.Log("Char clicked returned" + charClicked + " aka, the letter " + textmeshPro.textInfo.characterInfo[charClicked].character);
+        return amInsideme;
+    }
+    public bool CheckForClickOnLine(Vector2 inputScreenPosition, Camera camera)
+    {
+        if (inkParagraph.IsChoice() == false) return false;
+        if (textVisible == false) return false;
+
+        if (!TMP_TextUtilities.IsIntersectingRectTransform(textmeshPro.rectTransform, inputScreenPosition, camera)) return false;
+
+        int lineClicked = TMP_TextUtilities.FindIntersectingLine(textmeshPro, inputScreenPosition, camera);
+        bool amInsideme = lineClicked != -1;
+
+        
+        //if (amInsideme)
+        //{
+        //    TMP_LineInfo tmpLineInfo = textmeshPro.textInfo.lineInfo[lineClicked];
+        //    string textShown = textmeshPro.text.Substring(tmpLineInfo.firstCharacterIndex, tmpLineInfo.lastCharacterIndex - tmpLineInfo.firstCharacterIndex + 1);
+        //    Debug.Log("Line clicked returned " + lineClicked + " aka, the line that says " + textShown + "||");
+        //}
         return amInsideme;
     }
 
@@ -121,8 +177,8 @@ public class InkTextObject : MonoBehaviour,IObjectPoolElement
 
     private void Update()
     {
-        Debug.DrawLine(textmeshPro.bounds.min + rectTransform.position, textmeshPro.bounds.max + rectTransform.position, Color.gray);
-        Debug.DrawLine(textmeshPro.textBounds.min + rectTransform.position, textmeshPro.textBounds.max + rectTransform.position, Color.red);
+        //Debug.DrawLine(textmeshPro.bounds.min + rectTransform.position, textmeshPro.bounds.max + rectTransform.position, Color.gray);
+        //Debug.DrawLine(textmeshPro.textBounds.min + rectTransform.position, textmeshPro.textBounds.max + rectTransform.position, Color.red);
 
     }
 
