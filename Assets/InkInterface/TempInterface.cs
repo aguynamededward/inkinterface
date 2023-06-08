@@ -75,7 +75,7 @@ public class TempInterface : InputSOReceiver
 
             if (_prevTextObj != null)
             {
-                inkTextObj.SetLocalPosition(new Vector3(inkTextObj.transform.localPosition.x, _prevTextObj.GetBottomOfText(), inkTextObj.transform.localPosition.z));
+                inkTextObj.SetLocalPosition(new Vector3(inkTextObj.transform.localPosition.x, -_prevTextObj.GetBottomOfText(), inkTextObj.transform.localPosition.z));
             }
 
             inkTextObj.ShowText();

@@ -5,18 +5,20 @@ using UnityEngine;
 
 public struct InputSOData
 {
-    public InputSOData(Vector3 _pos, float _travelDistance, float _absoluteDistance, bool _clickSafe)
+    public InputSOData(Vector3 _pos, float _travelDistance, float _absoluteDistance, bool _clickSafe,bool _clicked = true)
     {
         position = _pos;
         travelDistance = _travelDistance;
         absoluteDistance = _absoluteDistance;
         clickSafe = _clickSafe;
+        clicked = _clicked;
     }
 
     public Vector3 position;
     public float travelDistance;
     public float absoluteDistance;
     public bool clickSafe;
+    public bool clicked;
 }
 
 [CreateAssetMenu(fileName = "New InputSO Source Object",menuName = "InputSO")]
@@ -25,6 +27,10 @@ public class InputSO : ScriptableObject
     public EventHandler<InputSOData> OnInputStart;
     public EventHandler<InputSOData> OnInputEnd;
     public EventHandler<InputSOData> OnInputUpdate;
+    /// <summary>
+    /// Sent when the input device moves without being clicked.
+    /// </summary>
+    public EventHandler<InputSOData> OnInputMouseOver;
 
     [SerializeField] float clickProtectionDelay = 0.5f;
 
@@ -71,7 +77,7 @@ public class InputSO : ScriptableObject
         pressTime = Time.time;
         releaseTime = -1f;
 
-        OnInputStart?.Invoke(this,new InputSOData(input2DPosition,0f,0f,CheckClickProtection(pressTime)));
+        OnInputStart?.Invoke(this,new InputSOData(input2DPosition,0f,0f,CheckClickProtection(pressTime),true));
     }
 
     public void EndInput(Vector2 inputVector)
@@ -84,15 +90,19 @@ public class InputSO : ScriptableObject
         //Vector3 input3DPosition = FormatMousePositionToWorldPosition(inputVector);
 
 
-        OnInputEnd?.Invoke(this, new InputSOData(input2DPosition,inputTravelDistance,inputAbsoluteTravelDistance, CheckClickProtection(releaseTime)));
+        OnInputEnd?.Invoke(this, new InputSOData(input2DPosition,inputTravelDistance,inputAbsoluteTravelDistance, CheckClickProtection(releaseTime),false));
     }
 
     public void UpdateInputPosition(Vector2 inputVector)
     {
         Update2DInput(inputVector);
 
-        OnInputUpdate?.Invoke(this, new InputSOData(input2DPosition, inputTravelDistance,inputAbsoluteTravelDistance, CheckClickProtection(Time.time)));
-        
+        OnInputUpdate?.Invoke(this, new InputSOData(input2DPosition, inputTravelDistance,inputAbsoluteTravelDistance, CheckClickProtection(Time.time),true));
+    }
+
+    public void UpdateMouseOver(Vector2 inputVector)
+    {
+        OnInputMouseOver?.Invoke(this, new InputSOData(inputVector, 0f, 0f, false, false));
     }
 
     public void ActivateClickProtection()

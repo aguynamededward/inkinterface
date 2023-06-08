@@ -23,8 +23,7 @@ public class InputSOTransmitter : MonoBehaviour, IPointerDownHandler, IPointerUp
 
     public void OnPointerMove(PointerEventData eventData)
     {
-        if (pointerDown == false) return;
-
-        inputScrob?.UpdateInputPosition(eventData.position);
+        if (pointerDown == false) inputScrob?.UpdateMouseOver(eventData.position);
+        else inputScrob?.UpdateInputPosition(eventData.position);
     }
 }
