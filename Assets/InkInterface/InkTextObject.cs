@@ -134,6 +134,28 @@ public class InkTextObject : MonoBehaviour,IObjectPoolElement
         return amInsideme;
     }
 
+    public bool CheckForClickOnRect(Vector2 inputScreenPosition, Camera camera)
+    {
+        if (inkParagraph.IsChoice() == false) return false;
+        if (textVisible == false) return false;
+
+        bool amInsideme = TMP_TextUtilities.IsIntersectingRectTransform(textmeshPro.rectTransform, inputScreenPosition, camera);
+
+
+        //if (amInsideme)
+        //{
+        //    TMP_LineInfo tmpLineInfo = textmeshPro.textInfo.lineInfo[lineClicked];
+        //    string textShown = textmeshPro.text.Substring(tmpLineInfo.firstCharacterIndex, tmpLineInfo.lastCharacterIndex - tmpLineInfo.firstCharacterIndex + 1);
+        //    Debug.Log("Line clicked returned " + lineClicked + " aka, the line that says " + textShown + "||");
+        //}
+        return amInsideme;
+    }
+
+    public bool IsChoice()
+    {
+        if (inkParagraph == null) return false;
+        else return inkParagraph.GetChoiceIndex() != -1;
+    }
     public int GetChoiceIndex()
     {
         return inkParagraph.GetChoiceIndex();

@@ -13,6 +13,7 @@ public static class ObjectPool<T> where T : Component, IObjectPoolElement
     static private List<T> objectPool = new List<T>();
     static private List<T> objectPoolActive = new List<T>();
 
+    static private int totalObjects = 0;
     static Dictionary<T, ObjectPoolOnShutdown> objectPoolShutdownCallbackDictionary = new Dictionary<T, ObjectPoolOnShutdown>();
     public delegate void ObjectPoolOnShutdown();
 
@@ -57,8 +58,10 @@ public static class ObjectPool<T> where T : Component, IObjectPoolElement
         {
             return PopFromObjectPool(sceneParent);
         }
-        
-        T inkTextObject = GameObject.Instantiate(prefab,sceneParent).GetComponent<T>();
+
+        Transform go = GameObject.Instantiate(prefab, sceneParent);
+        go.name = typeof(T) + " #" + totalObjects++;
+        T inkTextObject = go.GetComponent<T>();
         inkTextObject.InitInPool();
 
         return PopFromObjectPool(sceneParent);

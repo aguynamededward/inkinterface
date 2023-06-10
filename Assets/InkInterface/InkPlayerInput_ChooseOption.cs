@@ -33,12 +33,10 @@ public class InkPlayerInput_ChooseOption : InputSOReceiver
         int totalChoices = choiceObjects.Count;
         selectedChoice = null;
 
-        Vector3 mouseWorldPosition = FormatMousePositionToWorldPosition(_input.position);
-
         for (var q = 0; q < totalChoices; q++)
         {
 
-            if (choiceObjects[q].CheckForClick(mouseWorldPosition))
+            if (choiceObjects[q].CheckForClickOnLine(_input.position,cameraMain))
             {
                 selectedChoice = choiceObjects[q];
                 break;

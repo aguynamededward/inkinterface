@@ -9,22 +9,19 @@ public class InkInput_DialogueProgression : InputSOReceiver
 
     List<InkTextObject> inkTextObjects;
     int currentDialogueIndex = 0;
-    bool showMultipleLines = false;
+    
 
-    InkDelegate.Callback callbackOnTextComplete;
+    InkDelegate.Callback callbackOnNarrativeComplete;
+    InkDelegate.CallbackInt callbackOnNarrativeProgression;
 
-    public virtual void Init(List<InkTextObject> _dialogueObjects, InkDelegate.Callback _onCompleteCallback,bool showMultipleLines = false)
+    public virtual void Init(List<InkTextObject> _dialogueObjects, int startingIndex, InkDelegate.CallbackInt _onChangeCallback,InkDelegate.Callback _onCompleteCallback)
     {
-        if (activated)
-        {
-            CleanupCurrentText();
-            activated = false;
-        }
-
         inkTextObjects = _dialogueObjects;
-        callbackOnTextComplete = _onCompleteCallback;
-        currentDialogueIndex = -1;
-        this.showMultipleLines = showMultipleLines;
+        callbackOnNarrativeComplete = _onCompleteCallback;
+        callbackOnNarrativeProgression = _onChangeCallback;
+
+        currentDialogueIndex = startingIndex - 1;
+        
         activated = true;
 
         ShowNextLineOfDialogue();
@@ -36,76 +33,22 @@ public class InkInput_DialogueProgression : InputSOReceiver
         if(currentDialogueIndex >= inkTextObjects.Count - 1)
         {
             // We're at the end, return the callback
-            if (showMultipleLines) CompleteDialogueDisplay();
-            else CleanupCurrentText(true);
+            CompleteDialogueDisplay();
             return;
         }
 
-        if(!showMultipleLines && currentDialogueIndex >= 0)
-        {
-            inkTextObjects[currentDialogueIndex].HideText();
-        }
-
         currentDialogueIndex++;
-        inkTextObjects[currentDialogueIndex].ShowText();
-    }
-
-    protected void CleanupCurrentText(bool runCallbackAtEnd = false)
-    {
-        Debug.Log("DialogueProgression: CleanupCurrentText");
-        if (activated) StartCoroutine(HideTextInStages(1f,runCallbackAtEnd));
+        callbackOnNarrativeProgression?.Invoke(currentDialogueIndex);
+        //inkTextObjects[currentDialogueIndex].ShowText();
 
     }
 
-    protected IEnumerator HideTextInStages(float totalDuration, bool runCallbackAtEnd)
-    {
-        if (inkTextObjects.Count < 1 || !activated)
-        {
-
-            yield break;
-        }
-
-
-        int totalVisibleInkObjects = 0;
-        for(var q = 0; q < inkTextObjects.Count; q++)
-        {
-            if (inkTextObjects[q].IsVisible()) totalVisibleInkObjects++;
-        }
-
-        if (totalVisibleInkObjects <= 1)
-        {
-            Debug.Log("DialogueProgression: HideTextInStages - only one object, stopping now");
-            // Don't hold us up for one object
-
-            foreach(InkTextObject ito in inkTextObjects)
-            {
-                ito.HideText();
-            }
-
-            if (runCallbackAtEnd) CompleteDialogueDisplay();
-            yield break;
-        }
-
-
-        float waitDuration = totalDuration / totalVisibleInkObjects;
-
-        for(var q = 0; q < inkTextObjects.Count; q++)
-        {
-            if (!inkTextObjects[q].IsVisible()) continue;
-            inkTextObjects[q].HideText();
-            Debug.Log("DialogueProgression: HideTextInStages - hiding textObject #" + q);
-            yield return new WaitForSeconds(waitDuration);
-        }
-
-        if (runCallbackAtEnd) CompleteDialogueDisplay();
-
-    }
-
+    
     private void CompleteDialogueDisplay()
     {
         Debug.Log("DialogueProgression: CompleteDialogueDisplay - finished dialogue, running callback");
         activated = false;
-        callbackOnTextComplete?.Invoke();
+        callbackOnNarrativeComplete?.Invoke();
     }
     public override void OnInputEnd(object sendingSO, InputSOData _input)
     {
