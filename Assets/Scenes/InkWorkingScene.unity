@@ -875,7 +875,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!114 &1369533791
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1046,7 +1046,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!135 &1405375758
 SphereCollider:
   m_ObjectHideFlags: 0
@@ -1282,13 +1282,14 @@ GameObject:
   m_Component:
   - component: {fileID: 1654821445}
   - component: {fileID: 1654821446}
+  - component: {fileID: 1654821447}
   m_Layer: 0
   m_Name: TempInterface
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &1654821445
 Transform:
   m_ObjectHideFlags: 0
@@ -1322,6 +1323,22 @@ MonoBehaviour:
   textSceneParent: {fileID: 1602839516}
   inkTextObjectPrefab: {fileID: 2211373429919389279, guid: 55bf5d0d254d4f1409b8638ed7069ae8,
     type: 3}
+  dialogueProgressor: {fileID: 1654821447}
+--- !u!114 &1654821447
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1654821444}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6772444d9e9521f42ab64be24a9dc276, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  defaultCameraDistance: 17
+  input: {fileID: 11400000, guid: e68e0e1edbaa74c48b2925f870f2fadd, type: 2}
+  activated: 0
 --- !u!1 &1714510985
 GameObject:
   m_ObjectHideFlags: 0
@@ -1466,7 +1483,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &2070438158
 Transform:
   m_ObjectHideFlags: 0

@@ -8,6 +8,8 @@ public class TempInterface : InputSOReceiver
     [SerializeField] TextAsset inkJson;
     [SerializeField] Transform textSceneParent;
     [SerializeField] Transform inkTextObjectPrefab;
+    [SerializeField]
+    InkInput_DialogueProgression dialogueProgressor;
 
     InkEngine inkEngine;
 
@@ -29,6 +31,7 @@ public class TempInterface : InputSOReceiver
 
     public void NextStep()
     {
+        Debug.Log("InkInterface: NextStep");
         switch (inkEngine.GetCurrentState())
         {
             case InkEngine.State.Display_Next_Line: GetAllAvailableLines(); break;
@@ -109,11 +112,6 @@ public class TempInterface : InputSOReceiver
         InkTextObject inkTextObj;
         InkParagraph _nextPar;
 
-        currentTextIndex = -1;
-        totalText = 0;
-
-        input.ActivateClickProtection();
-
         while (inkEngine.GetCurrentState() == InkEngine.State.Display_Next_Line)
         {
             inkTextObj = ObjectPool<InkTextObject>.GetPoolObject(textSceneParent, inkTextObjectPrefab);
@@ -121,42 +119,19 @@ public class TempInterface : InputSOReceiver
 
             _nextPar = inkEngine.GetNextLine();
             inkTextObj.Init(_nextPar);
-
-            totalText++;
         }
 
-        DisplayNextLine();
-    
+        dialogueProgressor.Init(inkTextObjects, OnCompleteDialogue, false);
+
     }
 
-
-    int totalText;
-    int currentTextIndex;
-
-    public void DisplayNextLine()
+    private void OnCompleteDialogue()
     {
-        if(totalText <= 0 || currentTextIndex >= totalText)
-        {
-            NextStep();
-            return;
-        }
-
-        if(currentTextIndex >= 0)
-        {
-            inkTextObjects[currentTextIndex].HideText();
-        }
-
-        currentTextIndex++;
-
-        if(currentTextIndex >= totalText)
-        {
-            NextStep();
-            return;
-        }
-
-        inkTextObjects[currentTextIndex].ShowText();
-        input.ActivateClickProtection();
+        Debug.Log("InkInterface: OnCompleteDialogue - finished dialogue, running callback");
+        NextStep();
     }
+
+
 
     #region Handle CLicked Choices
     private void SelectIdentifiedChoice()
@@ -204,6 +179,7 @@ public class TempInterface : InputSOReceiver
     #region Input Handling
     public override void OnInputStart(object sendingSO, InputSOData _input)
     {
+        return;
         if(initializedChoices) IdentifyClickedChoice(_input);
     }
 
@@ -213,13 +189,8 @@ public class TempInterface : InputSOReceiver
     }
     public override void OnInputEnd(object sendingSO, InputSOData _input)
     {
+        return;
         if (_input.clickSafe == false) return;
-
-        if(currentTextIndex < totalText) // We're currently showing text
-        {
-            DisplayNextLine();
-            return;
-        }
 
         InkEngine.State state = inkEngine.GetCurrentState();
 

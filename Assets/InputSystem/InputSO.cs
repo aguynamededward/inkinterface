@@ -34,7 +34,7 @@ public class InputSO : ScriptableObject
 
     [SerializeField] float clickProtectionDelay = 0.5f;
 
-    private float clickProtectionTimeStamp = 0f;
+    public float clickProtectionTimeStamp = 0f;
 
     public static Vector3 input2DPosition = new Vector3(0f,0f,0f);
     public static Vector2 input2DStartPosition = new Vector2(0f, 0f);
@@ -53,6 +53,12 @@ public class InputSO : ScriptableObject
 
     public static float pressDuration { get { return (pressTime == -1f ? -1f : Time.time - pressTime); } }
     public static float releaseDuration { get { return (releaseTime == -1f ? -1f : Time.time - releaseTime); } }
+
+    private void OnEnable()
+    {
+        Debug.Log("InputSO: OnEnable - Click Timestamp" + clickProtectionTimeStamp);
+        clickProtectionTimeStamp = 0f;
+    }
 
     public static void Update2DInput(Vector2 inputVector)
     {
@@ -107,6 +113,7 @@ public class InputSO : ScriptableObject
 
     public void ActivateClickProtection()
     {
+        Debug.Log("InputSO: ActivateClickProtection");
         clickProtectionTimeStamp = Time.time;
     }
 

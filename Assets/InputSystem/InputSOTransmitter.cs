@@ -9,19 +9,19 @@ public class InputSOTransmitter : MonoBehaviour, IPointerDownHandler, IPointerUp
 
     private bool pointerDown = false;
 
-    public void OnPointerDown(PointerEventData eventData)
+    public virtual void OnPointerDown(PointerEventData eventData)
     {
         pointerDown = true;
         inputScrob?.StartInput(eventData.position);
     }
 
-    public void OnPointerUp(PointerEventData eventData)
+    public virtual void OnPointerUp(PointerEventData eventData)
     {
         pointerDown = false;
         inputScrob?.EndInput(eventData.position);
     }
 
-    public void OnPointerMove(PointerEventData eventData)
+    public virtual void OnPointerMove(PointerEventData eventData)
     {
         if (pointerDown == false) inputScrob?.UpdateMouseOver(eventData.position);
         else inputScrob?.UpdateInputPosition(eventData.position);

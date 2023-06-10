@@ -31,8 +31,11 @@ public class InkTextObject : MonoBehaviour,IObjectPoolElement
 
 
         textObjectsToBeUpdated.Add(this);
+    }
 
-
+    public bool IsVisible()
+    {
+        return textVisible;
     }
 
     public void ShowText()
