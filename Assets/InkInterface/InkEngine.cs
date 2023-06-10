@@ -112,7 +112,7 @@ public class InkEngine
 
         if (story.currentChoices.Count < 1) { Debug.Log("No choices available right now."); return; };
 
-        if (choiceIndex >= story.currentChoices.Count) { Debug.Log("Choice index " + choiceIndex + " is out of range of current choice total (" + story.currentChoices.Count + ")"); return; };
+        if (choiceIndex >= story.currentChoices.Count || choiceIndex < 0) { Debug.Log("Choice index " + choiceIndex + " is out of range of current choice total (" + story.currentChoices.Count + ")"); return; };
 
         story.ChooseChoiceIndex(choiceIndex);
 
@@ -187,7 +187,7 @@ public class InkParagraph
         choices.Add(_choice);
     }
 
-    public List<InkParagraph> GetChoices()
+    public List<InkParagraph> GetListOfChoices()
     {
         return choices;
     }

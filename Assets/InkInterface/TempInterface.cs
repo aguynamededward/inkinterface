@@ -3,24 +3,49 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class TempInterface : InputSOReceiver
+public class TempInterface : MonoBehaviour
 {
+    // Internally, we continue pushing through dialogue until we hit a choice point (later we'll add support for tags that request specific inputs - we'll stop before we grab more dialogue)
+    enum State
+    {
+        Unintialized,
+        GetDataFromInkEngine,
+        Loading_Dialogue,
+        Waiting_For_DialogueEnd,
+        Loading_Choices,
+        Waiting_For_ChoicesEnd
+    }
+
+    // 
+    enum DataState
+    {
+        Unintialized,   // Unloaded state, or after we've completed a dialogue run and are waiting for input
+        Loading,        // Currently loading dialogue objects in the background
+        Complete        // All dialogue objects loaded, waiting for end of dialogue run
+    }
+
+    [SerializeField] State state = State.Unintialized;
     [SerializeField] TextAsset inkJson;
     [SerializeField] Transform textSceneParent;
     [SerializeField] Transform inkTextObjectPrefab;
-    [SerializeField]
-    InkInput_DialogueProgression dialogueProgressor;
+    [SerializeField] InkInput_DialogueProgression dialogueProgressor;
+    [SerializeField] InkPlayerInput_ChooseOption choiceProgressor;
 
     InkEngine inkEngine;
 
-    bool initializedChoices = false;
+    DataState choiceObjectsAndData = DataState.Unintialized;
+    DataState dialogueObjectsAndData = DataState.Unintialized;
+
     // Start is called before the first frame update
     void Start()
     {
-        initializedChoices = false;
+        choiceObjectsAndData = DataState.Unintialized;
+        dialogueObjectsAndData = DataState.Unintialized;
+        
         inkEngine = new InkEngine();
         inkEngine.LoadNewStory(inkJson);
         inkEngine.InitializeStory();
+        state = State.GetDataFromInkEngine;
         NextStep();
     }
 
@@ -32,35 +57,70 @@ public class TempInterface : InputSOReceiver
     public void NextStep()
     {
         Debug.Log("InkInterface: NextStep");
+        switch (state)
+        {
+            case State.GetDataFromInkEngine:
+            {
+                    GetDataFromInkEngine();
+                    break;
+            }
+            default:
+            {
+                    break;
+            }
+
+        }
+        
+    }
+
+    public void GetDataFromInkEngine()
+    {
         switch (inkEngine.GetCurrentState())
         {
-            case InkEngine.State.Display_Next_Line: GetAllAvailableLines(); break;
-            case InkEngine.State.Choice_Point:
+            case InkEngine.State.Display_Next_Line:
                 {
-                    if(initializedChoices == false) GetAllAvailableChoices(); 
+                    if (dialogueObjectsAndData == DataState.Unintialized)
+                    {
+                        state = State.Loading_Dialogue;
+                        GetAllAvailableLines();
+                    }
+                    else state = State.Waiting_For_DialogueEnd;
                     break;
                 }
-                
-        } 
+            case InkEngine.State.Choice_Point:
+                {
+                    StartChoicePoint();
+                    break;
+                }
+            case InkEngine.State.End:
+                {
+                    Debug.Log("END OF GAME");
+                    break;
+                }
+        }
     }
 
     private void GetAllAvailableChoices()
     {
         if (inkEngine.GetCurrentState() != InkEngine.State.Choice_Point) return;
+        if (choiceObjectsAndData != DataState.Unintialized) return;
 
         ObjectPool<InkTextObject>.ReturnAllListItemsToPool(inkChoiceObjects);
         inkChoiceObjects.Clear();
 
-        List<InkParagraph> choices = inkEngine.GetChoices()?.GetChoices();
+        List<InkParagraph> choices = inkEngine.GetChoices()?.GetListOfChoices();
 
         if (choices == null) { Debug.LogWarning("Error: No choices available."); return; }
 
-        StartCoroutine(ProcessAllAvailableChoices(choices));
+        
+        StartCoroutine(LoadAllAvailableChoices(choices));
     }
 
-    private IEnumerator ProcessAllAvailableChoices(List<InkParagraph> choices)
+    private IEnumerator LoadAllAvailableChoices(List<InkParagraph> choices)
     {
         int totalChoices = choices.Count;
+
+        choiceObjectsAndData = DataState.Loading;
 
         InkTextObject inkTextObj;
         InkParagraph _nextPar;
@@ -81,13 +141,36 @@ public class TempInterface : InputSOReceiver
                 inkTextObj.SetLocalPosition(new Vector3(inkTextObj.transform.localPosition.x, -_prevTextObj.GetBottomOfText(), inkTextObj.transform.localPosition.z));
             }
 
-            inkTextObj.ShowText();
+            //inkTextObj.ShowText();
 
             _prevTextObj = inkTextObj;
         }
 
-        input.ActivateClickProtection();
-        initializedChoices = true;
+        choiceObjectsAndData = DataState.Complete;
+        if (state == State.Loading_Choices) StartChoicePoint();
+    }
+
+    public void StartChoicePoint()
+    {
+        if (choiceObjectsAndData != DataState.Complete)
+        {
+            state = State.Loading_Choices;
+            GetAllAvailableChoices();
+            Debug.Log("Choices were not pre-loaded, loading now.");
+            return;
+        }
+
+        state = State.Waiting_For_ChoicesEnd;
+        choiceProgressor.Init(inkChoiceObjects, FinishChoicePoint);
+    }
+
+    public void FinishChoicePoint(int i)
+    {
+        inkEngine.SelectChoice(i);
+        ClearChoicePoint();
+
+        state = State.GetDataFromInkEngine;
+        NextStep();
     }
 
     public void ClearAllLines()
@@ -100,17 +183,21 @@ public class TempInterface : InputSOReceiver
     {
         ObjectPool<InkTextObject>.ReturnAllListItemsToPool(inkChoiceObjects);
         inkChoiceObjects.Clear();
-        selectedChoice = null;
-        initializedChoices = false;
+
+        choiceObjectsAndData = DataState.Unintialized;
+        
     }
 
     private void GetAllAvailableLines()
     {
+        dialogueObjectsAndData = DataState.Loading;
         ClearChoicePoint();
         ClearAllLines();
 
         InkTextObject inkTextObj;
         InkParagraph _nextPar;
+        
+        state = State.Loading_Dialogue;
 
         while (inkEngine.GetCurrentState() == InkEngine.State.Display_Next_Line)
         {
@@ -121,110 +208,21 @@ public class TempInterface : InputSOReceiver
             inkTextObj.Init(_nextPar);
         }
 
-        dialogueProgressor.Init(inkTextObjects, OnCompleteDialogue, false);
-
+        dialogueObjectsAndData = DataState.Complete;
+        dialogueProgressor.Init(inkTextObjects, FinishDialogue, false);
+        
+        state = State.Waiting_For_DialogueEnd;
+        Invoke(nameof(GetAllAvailableChoices), 0.5f); // Get a head start loading in the choices
     }
 
-    private void OnCompleteDialogue()
+    private void FinishDialogue()
     {
-        Debug.Log("InkInterface: OnCompleteDialogue - finished dialogue, running callback");
+        Debug.Log("InkInterface: FinishDialogue - finished dialogue, running callback");
+        dialogueObjectsAndData = DataState.Unintialized;
+        
+        state = State.GetDataFromInkEngine;
         NextStep();
     }
 
 
-
-    #region Handle CLicked Choices
-    private void SelectIdentifiedChoice()
-    {
-        if (selectedChoice == null) { Debug.Log("ERROR: No choice to execute."); return; }
-
-        inkEngine.SelectChoice(selectedChoice.GetChoiceIndex());
-
-        selectedChoice = null;
-
-        NextStep();
-    }
-   
-    private void IdentifyClickedChoice(InputSOData _input)
-    {
-        int totalChoices = inkChoiceObjects.Count;
-        selectedChoice = null;
-
-        Vector3 mouseWorldPosition = FormatMousePositionToWorldPosition(_input.position);
-
-        for(var q = 0; q < totalChoices; q++)
-        {
-
-            if (inkChoiceObjects[q].CheckForClick(mouseWorldPosition)) 
-            {
-                selectedChoice = inkChoiceObjects[q];
-                break;
-            };
-        }
-    }
-
-    private bool ConfirmClickedChoice(InputSOData _input)
-    {
-        if (selectedChoice == null) return false;
-
-        Vector3 mouseWorldPosition = FormatMousePositionToWorldPosition(_input.position);
-
-        bool didWeConfirm = selectedChoice.CheckForClick(mouseWorldPosition);
-        Debug.Log("We did" + (!didWeConfirm ? " NOT" : "") + " confirm " + selectedChoice + " as clicked on.",selectedChoice);
-        return didWeConfirm;
-    }
-
-    #endregion
-
-    #region Input Handling
-    public override void OnInputStart(object sendingSO, InputSOData _input)
-    {
-        return;
-        if(initializedChoices) IdentifyClickedChoice(_input);
-    }
-
-    public override void OnInputUpdate(object sendingSO, InputSOData _input)
-    {
-        
-    }
-    public override void OnInputEnd(object sendingSO, InputSOData _input)
-    {
-        return;
-        if (_input.clickSafe == false) return;
-
-        InkEngine.State state = inkEngine.GetCurrentState();
-
-        if(state == InkEngine.State.Choice_Point)
-        {
-            if (initializedChoices)
-            {
-                if (ConfirmClickedChoice(_input))
-                {
-                    SelectIdentifiedChoice();
-                }
-            }
-            else
-            {
-                GetAllAvailableChoices();
-            }
-
-            return;
-        }
-        
-        if(state == InkEngine.State.Display_Next_Line)
-        {
-            GetAllAvailableLines();
-            return;
-        }
-
-        if(state == InkEngine.State.End)
-        {
-            Debug.Log("End of story");
-            return;
-        }
-
-    }
-
-
-    #endregion
 }

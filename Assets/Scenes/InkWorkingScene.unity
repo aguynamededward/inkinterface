@@ -1283,6 +1283,7 @@ GameObject:
   - component: {fileID: 1654821445}
   - component: {fileID: 1654821446}
   - component: {fileID: 1654821447}
+  - component: {fileID: 1654821448}
   m_Layer: 0
   m_Name: TempInterface
   m_TagString: Untagged
@@ -1317,13 +1318,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e73c795ed3c509847ae1e27e19e119c8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  defaultCameraDistance: 17
-  input: {fileID: 11400000, guid: e68e0e1edbaa74c48b2925f870f2fadd, type: 2}
+  state: 0
   inkJson: {fileID: 4900000, guid: 7831e40286f6f0144895ee2b5bba9bbb, type: 3}
   textSceneParent: {fileID: 1602839516}
   inkTextObjectPrefab: {fileID: 2211373429919389279, guid: 55bf5d0d254d4f1409b8638ed7069ae8,
     type: 3}
   dialogueProgressor: {fileID: 1654821447}
+  choiceProgressor: {fileID: 1654821448}
 --- !u!114 &1654821447
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1339,6 +1340,20 @@ MonoBehaviour:
   defaultCameraDistance: 17
   input: {fileID: 11400000, guid: e68e0e1edbaa74c48b2925f870f2fadd, type: 2}
   activated: 0
+--- !u!114 &1654821448
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1654821444}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 33fe69a932b13f14eb2a4afa5a910d5b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  defaultCameraDistance: 17
+  input: {fileID: 11400000, guid: e68e0e1edbaa74c48b2925f870f2fadd, type: 2}
 --- !u!1 &1714510985
 GameObject:
   m_ObjectHideFlags: 0
