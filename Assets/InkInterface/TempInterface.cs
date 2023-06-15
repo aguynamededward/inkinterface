@@ -29,7 +29,7 @@ public class TempInterface : MonoBehaviour
     [SerializeField] TextAsset inkJson;
     //[SerializeField] Transform textSceneParent;
     //[SerializeField] Transform inkTextObjectPrefab;
-    [SerializeField] InkInput_DialogueProgression dialogueProgressor;
+    [SerializeField] InkPlayerInput_DialogueProgression dialogueProgressor;
     [SerializeField] InkPlayerInput_ChooseOption choiceProgressor;
     [SerializeField] TextDirector textDirector;
 

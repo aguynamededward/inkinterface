@@ -37,14 +37,14 @@ public class TextDirector : MonoBehaviour
         originalParentPosition = textSceneParent.position;
     }
 
-    public void ClearChoicePoint()
+    public virtual void ClearChoicePoint()
     {
         ObjectPool<InkTextObject>.ReturnAllListItemsToPool(inkChoiceObjects);
         inkChoiceObjects.Clear();
 
         choiceObjectsAndData = DataState.Unintialized;
     }
-    public void LoadNarrative(List<InkParagraph> listOfPars,InkDelegate.CallbackInt callBack)
+    public virtual void LoadNarrative(List<InkParagraph> listOfPars,InkDelegate.CallbackInt callBack)
     {
         if (narrativeObjectsAndData == DataState.Loading)
         {
@@ -55,7 +55,7 @@ public class TextDirector : MonoBehaviour
         StartCoroutine(LoadInkParagraphs(listOfPars, SetNarrativeDataStateValue, inkTextObjects, callBack));
     }
 
-    public void LoadChoices(List<InkParagraph> listofChoices,InkDelegate.CallbackInt callBack)
+    public virtual void LoadChoices(List<InkParagraph> listofChoices,InkDelegate.CallbackInt callBack)
     {
         if(choiceObjectsAndData == DataState.Loading)
         {
@@ -162,6 +162,7 @@ public class TextDirector : MonoBehaviour
     }
     public void FocusOnTextObject(InkTextObject ito)
     {
+
         textSceneParent.transform.DOMove(originalParentPosition - ito.transform.localPosition, 1f);
         
     }

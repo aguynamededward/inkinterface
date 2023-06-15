@@ -1,0 +1,27 @@
+The way the text is positioned and revealed should be determined by the scene.
+
+
+some functions
+	load a new scene
+		-> an SO with 
+			a prefab scene instance 
+				maybe the instance has a bunch of nodes for text, etc, if we're moving the camera a lot in / out 
+			text styling
+			movement type
+			
+			etc
+	transition type
+	get player input from some object
+	change a variable (probably don't need it, we can save in the ink json)
+	clear all the text and start the scene over 
+	
+	
+	
+
+
+Tags seem like they'll come in a couple styles
+	before we show the text 
+	after we show text 
+	requires new scene load 
+	
+	

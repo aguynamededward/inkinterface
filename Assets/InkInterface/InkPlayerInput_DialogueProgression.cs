@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class InkInput_DialogueProgression : InputSOReceiver
+public class InkPlayerInput_DialogueProgression : InputSOReceiver
 {
     public bool activated = false;
 
