@@ -5,7 +5,9 @@ using UnityEngine;
 
 public enum WorldDepth
 {
+
     Screen = 0,
+    BackgroundWaiting = 25,
     Background = 20,
     Text = 19
 }
