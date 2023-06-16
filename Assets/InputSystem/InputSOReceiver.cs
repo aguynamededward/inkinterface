@@ -19,7 +19,7 @@ public abstract class InputSOReceiver : MonoBehaviour
         return cameraMain.ScreenToWorldPoint(new Vector3(inputVector.x, inputVector.y, defaultCameraDistance));
     }
 
-    public float defaultCameraDistance = 17f;
+    public float defaultCameraDistance = 20f;
 
     [SerializeField] protected InputSO input;
 

@@ -968,6 +968,7 @@ GameObject:
   - component: {fileID: 1374961972}
   - component: {fileID: 1374961971}
   - component: {fileID: 1374961970}
+  - component: {fileID: 1374961975}
   m_Layer: 5
   m_Name: TouchCanvas
   m_TagString: Untagged
@@ -1074,6 +1075,18 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0, y: 0}
+--- !u!114 &1374961975
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1374961969}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 89b51400415da9a4ba91dfdb22c7570e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &1405375757
 GameObject:
   m_ObjectHideFlags: 0
@@ -1093,7 +1106,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!135 &1405375758
 SphereCollider:
   m_ObjectHideFlags: 0
@@ -1192,7 +1205,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5d3a4da641cb75b44a44b83f1f552cce, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  defaultCameraDistance: 17
+  defaultCameraDistance: 20
   input: {fileID: 11400000, guid: e68e0e1edbaa74c48b2925f870f2fadd, type: 2}
   maxTravelDistance: 200
 --- !u!1 &1592391326
@@ -1337,7 +1350,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &1654821445
 Transform:
   m_ObjectHideFlags: 0
@@ -1543,7 +1556,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &2070438158
 Transform:
   m_ObjectHideFlags: 0
