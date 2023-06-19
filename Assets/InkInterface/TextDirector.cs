@@ -95,6 +95,8 @@ public class TextDirector : MonoBehaviour
 
         int startingPosition = textObjectList.Count;
 
+
+        // TODO -- add a check for ink paragraphs with no text in them - basically skip them. (some inkpars will only have tags)
         for(var q = 0;q < inkPars.Count; q++)
         {
             yield return 0; // Before anything else - wait a frame. In case the last text object loaded needs time to update

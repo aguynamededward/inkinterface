@@ -10,6 +10,7 @@ public class InkPlayerInput_ChooseOption : InputSOReceiver
     protected InkDelegate.CallbackInt choiceCallback;
     protected InkTextObject selectedChoice;
 
+
     public void Init(List<InkTextObject> _choiceObjects,InkDelegate.CallbackInt _choiceCallback)
     {
         activated = true;

@@ -8,6 +8,7 @@ using TMPro;
 public class InkSceneSO : ScriptableObject
 {
     public Transform InkScenePrefab;
+    public Transform InkTextObjectPrefab;
     public TMP_FontAsset font;
 
 

@@ -16,6 +16,7 @@ public class SwipePageInputReceiver : InputSOReceiver
     public bool activated = false;
     public bool moving = false;
     public bool readyToSwipe = false;
+
     [SerializeField] private Transform parentObject;
 
     private Vector3 homePosition;

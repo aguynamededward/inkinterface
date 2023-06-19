@@ -1208,6 +1208,7 @@ MonoBehaviour:
   defaultCameraDistance: 20
   input: {fileID: 11400000, guid: e68e0e1edbaa74c48b2925f870f2fadd, type: 2}
   maxTravelDistance: 200
+  numberOfLoops: 10000
 --- !u!1 &1592391326
 GameObject:
   m_ObjectHideFlags: 0
@@ -1556,7 +1557,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &2070438158
 Transform:
   m_ObjectHideFlags: 0

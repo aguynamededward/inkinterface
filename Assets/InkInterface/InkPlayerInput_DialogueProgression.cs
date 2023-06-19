@@ -40,7 +40,6 @@ public class InkPlayerInput_DialogueProgression : InputSOReceiver
         currentDialogueIndex++;
         callbackOnNarrativeProgression?.Invoke(currentDialogueIndex);
         //inkTextObjects[currentDialogueIndex].ShowText();
-
     }
 
     
@@ -58,7 +57,6 @@ public class InkPlayerInput_DialogueProgression : InputSOReceiver
 
         input.ActivateClickProtection();
         ShowNextLineOfDialogue();
-        
     }
 
     public override void OnInputStart(object sendingSO, InputSOData _input)

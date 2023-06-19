@@ -9,20 +9,20 @@ public enum DataState
     Loading,        // Currently loading dialogue objects in the background
     Complete        // All dialogue objects loaded, waiting for end of dialogue run
 }
-public class TempInterface : MonoBehaviour
+public class InkInterface : MonoBehaviour
 {
     // Internally, we continue pushing through dialogue until we hit a choice point (later we'll add support for tags that request specific inputs - we'll stop before we grab more dialogue)
     enum State
     {
         Unintialized,
         GetDataFromInkEngine,
-        Loading_Narrative,
-        Waiting_For_NarrativeComplete,
-        Loading_Choices,
-        Waiting_For_ChoicesComplete
-    }
-
-    // 
+        Loading_Narrative,              // --- Narrative Progression
+        Waiting_For_NarrativeComplete,  // --- returns blank InkDelegate.Callback()
+        Loading_Choices,                // ---- Choose Option
+        Waiting_For_ChoicesComplete,    // Returns an InkDelegate.Callback(int)
+        Loading_Input,                  // --- Ink Custom Input
+        Waiting_For_InputComplete       // --- returns a blank InkDelegate.Callback
+    }  
 
 
     [SerializeField] State state = State.Unintialized;
@@ -47,6 +47,7 @@ public class TempInterface : MonoBehaviour
 
     List<InkTextObject> inkTextObjects = new List<InkTextObject>();
     List<InkTextObject> inkChoiceObjects = new List<InkTextObject>();
+    Queue<InkParagraph> customInteractionQueue = new Queue<InkParagraph>();
 
     InkTextObject selectedChoice;
 
@@ -101,7 +102,7 @@ public class TempInterface : MonoBehaviour
         if (inkEngine.GetCurrentState() != InkEngine.State.Choice_Point) return;
         if (textDirector.choiceObjectsAndData != DataState.Unintialized) return;
 
-        textDirector.ClearChoicePoint();
+        //textDirector.ClearChoicePoint();
 
         List<InkParagraph> choices = inkEngine.GetChoices()?.GetListOfChoices();
         if (choices == null) { Debug.LogWarning("Error: No choices available."); return; }
@@ -156,9 +157,17 @@ public class TempInterface : MonoBehaviour
         }
 
        List<InkParagraph> inkPars = new List<InkParagraph>();
+        InkParagraph inkPar;
        while(inkEngine.GetCurrentState() == InkEngine.State.Display_Next_Line)
         {
-            inkPars.Add(inkEngine.GetNextLine());
+            inkPar = inkEngine.GetNextLine();
+            inkPars.Add(inkPar);
+
+            if(inkPar.tags.Contains("customInteraction")) // Save the custom interaction to our queue and break
+            {
+                customInteractionQueue.Enqueue(inkPar);
+                break;
+            }
         }
 
         textDirector.LoadNarrative(inkPars, NarrativeLoadCompleteCallback);
@@ -169,6 +178,8 @@ public class TempInterface : MonoBehaviour
         dialogueProgressor.Init(textDirector.GetNarrativeObjects(), startingPosition,textDirector.ShowNarrativeAtIndex,FinishNarrative);
 
         state = State.Waiting_For_NarrativeComplete;
+
+        // Add check if we have a custom interaction object we need to load
 
         if(inkEngine.GetCurrentState() == InkEngine.State.Choice_Point)
         {

@@ -25,17 +25,41 @@ public abstract class InputSOReceiver : MonoBehaviour
 
     protected void RegisterInput(InputSO _input)
     {
+        if(input != _input && input != null)
+        {
+            UnregisterInput(input);
+        }
+
         _input.OnInputStart += OnInputStart;
         _input.OnInputUpdate += OnInputUpdate;
         _input.OnInputEnd += OnInputEnd;
+
+        input = _input;
     }
 
     protected void UnregisterInput(InputSO _input)
     {
-        _input.OnInputStart += OnInputStart;
-        _input.OnInputUpdate += OnInputUpdate;
-        _input.OnInputEnd += OnInputEnd;
+        _input.OnInputStart -= OnInputStart;
+        _input.OnInputUpdate -= OnInputUpdate;
+        _input.OnInputEnd -= OnInputEnd;
     }
+
+    protected void RegisterInput()
+    {
+        if (input != null)
+        {
+            RegisterInput(input);
+        }
+    }
+
+    protected void UnregisterInput()
+    {
+        if(input != null)
+        {
+            UnregisterInput(input);
+        }
+    }
+
 
     public abstract void OnInputStart(object sendingSO, InputSOData _input);
 

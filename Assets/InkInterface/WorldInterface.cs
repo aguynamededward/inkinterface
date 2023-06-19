@@ -5,20 +5,19 @@ using UnityEngine;
 
 public enum WorldDepth
 {
-
     Screen = 0,
     BackgroundWaiting = 25,
     Background = 20,
     Text = 19
 }
-public class CanvasInterface : MonoBehaviour
+public class WorldInterface : MonoBehaviour
 {
-    public static CanvasInterface Instance;
+    public static WorldInterface Instance;
 
     private Canvas canvas;
 
 
-    private Dictionary<WorldDepth, float[]> screenSizeDictionary = new Dictionary<WorldDepth, float[]>();
+    private Dictionary<int, float[]> screenSizeDictionary = new Dictionary<int, float[]>();
 
     bool initialized = false;
 
@@ -44,17 +43,17 @@ public class CanvasInterface : MonoBehaviour
         UpdateScreenReferences();
     }
 
-    public static Vector3 WorldSpaceAtDepth(Vector2 screenSpace,WorldDepth depth)
+    public static Vector3 ScreenSpaceToWorldSpaceAtDepth(Vector2 screenSpace,WorldDepth depth)
     {
-        return Instance.WorldSpaceDepthLocal(screenSpace, depth);
+        return Instance.WorldSpaceDepthLocal(screenSpace, (int)depth);
     }
 
-    private Vector3 WorldSpaceDepthLocal(Vector2 screenSpace, WorldDepth depth)
+    private Vector3 WorldSpaceDepthLocal(Vector2 screenSpace, int depth)
     {
         if (!screenSizeDictionary.ContainsKey(depth)) screenSizeDictionary[depth] = GetScreenPlaneAtDistance((int)depth);
 
 
-        float[] _screenArray = screenSizeDictionary[WorldDepth.Screen];
+        float[] _screenArray = screenSizeDictionary[0];
         float[] _tempArray = screenSizeDictionary[depth];
 
         Vector3 worldSpace = new Vector3(0f, 0f, _tempArray[4]);
@@ -102,10 +101,10 @@ public class CanvasInterface : MonoBehaviour
         verticalFOV = mainCamera.fieldOfView;
         horizontalFOV = Camera.VerticalToHorizontalFieldOfView(verticalFOV, screenWidth / screenHeight);
 
-        screenSizeDictionary[WorldDepth.Screen] = new float[4] { 0f, 0f, screenWidth, screenHeight };
+        screenSizeDictionary[(int)WorldDepth.Screen] = new float[4] { 0f, 0f, screenWidth, screenHeight };
 
-        screenSizeDictionary[WorldDepth.Background] = GetScreenPlaneAtDistance((int)WorldDepth.Background);
-        screenSizeDictionary[WorldDepth.Text] = GetScreenPlaneAtDistance((int)WorldDepth.Text);
+        screenSizeDictionary[(int)WorldDepth.Background] = GetScreenPlaneAtDistance((int)WorldDepth.Background);
+        screenSizeDictionary[(int)WorldDepth.Text] = GetScreenPlaneAtDistance((int)WorldDepth.Text);
     }
 
     private float[] GetScreenPlaneAtDistance(int depth)

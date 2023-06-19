@@ -24,7 +24,7 @@ public class TestInputReceiver : InputSOReceiver
         meshRenderer.material.color = Color.grey;
         transform.position = FormatMousePositionToWorldPosition(e.position);
         
-        endPos = CanvasInterface.WorldSpaceAtDepth(e.position, WorldDepth.Text);
+        endPos = WorldInterface.ScreenSpaceToWorldSpaceAtDepth(e.position, WorldDepth.Text);
         Debug.Log("End Pos: " + endPos);
 
         lastPosition = e.position;
@@ -48,7 +48,7 @@ public class TestInputReceiver : InputSOReceiver
         w.Start();
         for (var q = 0; q < numberOfLoops; q++)
         {
-            temp = CanvasInterface.WorldSpaceAtDepth(lastPosition,WorldDepth.Background);
+            temp = WorldInterface.ScreenSpaceToWorldSpaceAtDepth(lastPosition,WorldDepth.Background);
         }
 
         w.Stop();
@@ -68,7 +68,7 @@ public class TestInputReceiver : InputSOReceiver
     {
         meshRenderer.material.color = Color.green;
         transform.position = FormatMousePositionToWorldPosition(e.position);
-        startPos = CanvasInterface.WorldSpaceAtDepth(e.position, WorldDepth.Text);
+        startPos = WorldInterface.ScreenSpaceToWorldSpaceAtDepth(e.position, WorldDepth.Text);
         Debug.Log("Start Pos: " + startPos);
     }
 
