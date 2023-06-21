@@ -10,7 +10,10 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 23555dedc1faf3243a8e4c982550a8af, type: 3}
-  m_Name: GreenBackground
+  m_Name: Test
   m_EditorClassIdentifier: 
-  InkScenePrefab: {fileID: 0}
+  InkPagePrefab: {fileID: 5315785136782774849, guid: b07f7e98afbca8248b15bb98d8e64039,
+    type: 3}
+  InkTextObjectPrefab: {fileID: 2211373429919389279, guid: 55bf5d0d254d4f1409b8638ed7069ae8,
+    type: 3}
   font: {fileID: 0}

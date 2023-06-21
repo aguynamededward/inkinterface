@@ -29,11 +29,65 @@ public class InkInterface : MonoBehaviour
     [SerializeField] TextAsset inkJson;
     //[SerializeField] Transform textSceneParent;
     //[SerializeField] Transform inkTextObjectPrefab;
-    [SerializeField] InkPlayerInput_DialogueProgression dialogueProgressor;
-    [SerializeField] InkPlayerInput_ChooseOption choiceProgressor;
+    [SerializeField] InkPlayerInput_NarrativeProgression dialogueProgressor;
+    [SerializeField] InkPlayerInput_ChoiceProgression choiceProgressor;
     [SerializeField] TextDirector textDirector;
 
     InkEngine inkEngine;
+
+    public PageDirector currentPageDirector;
+    public PageDirector prevPageDirector;
+
+
+    #region Loading Variables
+    private int pendingPackageId = -1;
+    private Queue<ContentPackage> contentPackageQueue = new Queue<ContentPackage>();
+    #endregion
+
+    #region Distributing Variables
+
+    #endregion
+
+    private void OnEnable()
+    {
+        ContentPackage.OnPackageComplete += ContentPackage_OnPackageComplete;
+        ContentPackage.OnPackageDecisionComplete += ContentPackage_OnPackageDecisionComplete;
+    }
+
+    private void ContentPackage_OnPackageDecisionComplete(int _id, int _choiceIndex)
+    {
+        if(_id == pendingPackageId)
+        {
+            ContentPackage currentWaitingPackage = contentPackageQueue.Peek();
+            if(currentWaitingPackage.id == _id && currentWaitingPackage.packageType == PackageType.Choice)
+            {
+                if (Mathf.Clamp(_choiceIndex, 0, currentWaitingPackage.inkParagraphList.Count - 1) == _choiceIndex) // Did we pick an item inside the choice list?
+                {
+                    inkEngine.SelectChoice(_choiceIndex);
+                    pendingPackageId = -1;
+                    contentPackageQueue.Dequeue(); // Pop the choice off the list, we're good
+                }
+                else
+                {
+                    Debug.Log("InkInterface: Chose " + _choiceIndex + " which is outside the bounds of 0 and " + (currentWaitingPackage.inkParagraphList.Count - 1) + ".");
+                }
+            }
+        }
+    }
+
+    private void OnDisable()
+    {
+        ContentPackage.OnPackageComplete -= ContentPackage_OnPackageComplete;
+        ContentPackage.OnPackageDecisionComplete -= ContentPackage_OnPackageDecisionComplete;
+    }
+
+
+    private void ContentPackage_OnPackageComplete(int i)
+    {
+        if (i == pendingPackageId) pendingPackageId = -1;
+        Debug.Log("Package #" + i + " reports finished.");
+    }
+
 
     // Start is called before the first frame update
     void Start()
@@ -48,6 +102,12 @@ public class InkInterface : MonoBehaviour
     List<InkTextObject> inkTextObjects = new List<InkTextObject>();
     List<InkTextObject> inkChoiceObjects = new List<InkTextObject>();
     Queue<InkParagraph> customInteractionQueue = new Queue<InkParagraph>();
+
+    
+
+    int currentPage = -1;       // Who are we currently feeding content to?
+    int previousPage = -1;      
+
 
     InkTextObject selectedChoice;
 
@@ -76,7 +136,7 @@ public class InkInterface : MonoBehaviour
         {
             case InkEngine.State.Display_Next_Line:
                 {
-                    if (textDirector.narrativeObjectsAndData == DataState.Unintialized)
+                    if (!currentPageDirector || currentPageDirector.narrativeObjectsAndData == DataState.Unintialized)
                     {
                         state = State.Loading_Narrative;
                         LoadAllAvailableNarrativeLines();
@@ -128,7 +188,7 @@ public class InkInterface : MonoBehaviour
 
         state = State.Waiting_For_ChoicesComplete;
         textDirector.ShowChoices();
-        choiceProgressor.Init(textDirector.GetChoiceObjects(), FinishChoicePoint);
+        choiceProgressor.SetupChoiceMoment(textDirector.GetChoiceObjects(), FinishChoicePoint);
     }
 
     public void FinishChoicePoint(int i)

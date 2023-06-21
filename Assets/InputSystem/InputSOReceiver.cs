@@ -23,40 +23,41 @@ public abstract class InputSOReceiver : MonoBehaviour
 
     [SerializeField] protected InputSO input;
 
-    protected void RegisterInput(InputSO _input)
+    public void RegisterInput(InputSO _input)
     {
         if(input != _input && input != null)
         {
-            UnregisterInput(input);
+            UnregisterInput();
         }
 
-        _input.OnInputStart += OnInputStart;
-        _input.OnInputUpdate += OnInputUpdate;
-        _input.OnInputEnd += OnInputEnd;
-
         input = _input;
+
+        _RegisterInput(_input);
     }
 
-    protected void UnregisterInput(InputSO _input)
+    protected virtual void _UnregisterInput(InputSO _input)
     {
+        if (!_input) return;
+
         _input.OnInputStart -= OnInputStart;
         _input.OnInputUpdate -= OnInputUpdate;
         _input.OnInputEnd -= OnInputEnd;
     }
 
-    protected void RegisterInput()
+    protected virtual void _RegisterInput(InputSO _input)
     {
-        if (input != null)
-        {
-            RegisterInput(input);
-        }
+        if (!_input) return;
+        
+        _input.OnInputStart += OnInputStart;
+        _input.OnInputUpdate += OnInputUpdate;
+        _input.OnInputEnd += OnInputEnd;
     }
 
-    protected void UnregisterInput()
+    public void UnregisterInput()
     {
         if(input != null)
         {
-            UnregisterInput(input);
+            _UnregisterInput(input);
         }
     }
 
@@ -75,7 +76,7 @@ public abstract class InputSOReceiver : MonoBehaviour
 
     public virtual void OnDisable()
     {
-        if(input != null) UnregisterInput(input);
+        if(input != null) _UnregisterInput(input);
         else Debug.Log("Didn't assign an InputSO object for " + gameObject.name + "." + this + " (disabled)");
     }
 

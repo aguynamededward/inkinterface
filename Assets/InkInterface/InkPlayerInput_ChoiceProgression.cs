@@ -3,22 +3,38 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class InkPlayerInput_ChooseOption : InputSOReceiver
+public class InkPlayerInput_ChoiceProgression : InputSOReceiver
 {
     protected bool activated = false;
     protected List<InkTextObject> choiceObjects;
     protected InkDelegate.CallbackInt choiceCallback;
     protected InkTextObject selectedChoice;
 
+    
 
-    public void Init(List<InkTextObject> _choiceObjects,InkDelegate.CallbackInt _choiceCallback)
+    public void SetupChoiceMoment(List<InkTextObject> _choiceObjects,InkDelegate.CallbackInt _choiceCallback)
     {
         activated = true;
         choiceObjects = _choiceObjects;
         choiceCallback = _choiceCallback;
 
-        input.OnInputMouseOver += OnMouseOver;
         ShowAllChoices();
+    }
+
+    protected override void _RegisterInput(InputSO _input)
+    {
+        if (!_input) return;
+
+        _input.OnInputMouseOver += OnMouseOver;
+        base._RegisterInput(_input);
+    }
+
+    protected override void _UnregisterInput(InputSO _input)
+    {
+        if (!_input) return;
+
+        _input.OnInputMouseOver -= OnMouseOver;
+        base._UnregisterInput(_input);
     }
 
     public virtual void ShowAllChoices()
@@ -56,7 +72,7 @@ public class InkPlayerInput_ChooseOption : InputSOReceiver
     }
     private void OnMouseOver(object sender, InputSOData _input)
     {
-        if (!activated) return;
+        if (!activated || !selectedChoice) return;
     }
 
     public override void OnInputEnd(object sendingSO, InputSOData _input)
