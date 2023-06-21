@@ -7,8 +7,6 @@ using TMPro;
 [CreateAssetMenu(fileName = "New InkPage SO", menuName = "InkPage")]
 public class InkPageSO : ScriptableObject
 {
-
-
     public Transform InkPagePrefab;
     public Transform InkTextObjectPrefab;
     public TMP_FontAsset font;

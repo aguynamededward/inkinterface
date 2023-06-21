@@ -61,9 +61,11 @@ public class InkEngine
         if(story.currentTags.Count > 0)
         {
             int totalTags = story.currentTags.Count;
+            InkTagSO tagSO;
             for (var q = 0; q < totalTags; q++)
             {
-                sentence.AddTag(story.currentTags[q]);
+                tagSO = InkTags.ParseTags(story.currentTags[q]);
+                if(tagSO != null ) sentence.AddTag(tagSO);
             }
         }
 
@@ -91,10 +93,12 @@ public class InkEngine
                 if(story.currentChoices[q].tags != null)
                 {
                     totalTags = story.currentChoices[q].tags.Count;
+                    InkTagSO inkTag;
 
                     for (var j = 0; j < totalTags; j++)
                     {
-                        choice.AddTag(story.currentChoices[q].tags[j]);
+                        inkTag = InkTags.ParseTags(story.currentChoices[q].tags[j]);
+                        if(inkTag != null) choice.AddTag(inkTag);
                     }
                 }
 
@@ -142,22 +146,22 @@ public class InkParagraph
     public InkParagraph(string _text)
     {
         text = _text;
-        tags = new List<string>();
+        tags = new List<InkTagSO>();
         choiceIndex = -1;
     }
     public InkParagraph(string _text, int _choiceIndex)
     {
         text = _text;
-        tags = new List<string>();
+        tags = new List<InkTagSO>();
         choiceIndex = _choiceIndex;
     }
 
-    public void AddTag(string _tag)
+    public void AddTag(InkTagSO _tag)
     {
         tags.Add(_tag);
     }
     public string text;
-    public List<string> tags;
+    public List<InkTagSO> tags;
 
     public int GetChoiceIndex()
     {

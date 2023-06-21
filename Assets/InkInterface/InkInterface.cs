@@ -33,6 +33,11 @@ public class InkInterface : MonoBehaviour
     [SerializeField] InkPlayerInput_ChoiceProgression choiceProgressor;
     [SerializeField] TextDirector textDirector;
 
+    [Header("Important Ink Tags")]
+    [SerializeField] InkTagSO CustomInterfaceTag;
+    [SerializeField] InkTagSO NewSceneTag;
+
+
     InkEngine inkEngine;
 
     public PageDirector currentPageDirector;
@@ -40,11 +45,15 @@ public class InkInterface : MonoBehaviour
 
 
     #region Loading Variables
+
     private int pendingPackageId = -1;
     private Queue<ContentPackage> contentPackageQueue = new Queue<ContentPackage>();
+
     #endregion
 
     #region Distributing Variables
+
+
 
     #endregion
 
@@ -53,6 +62,20 @@ public class InkInterface : MonoBehaviour
         ContentPackage.OnPackageComplete += ContentPackage_OnPackageComplete;
         ContentPackage.OnPackageDecisionComplete += ContentPackage_OnPackageDecisionComplete;
     }
+    private void OnDisable()
+    {
+        ContentPackage.OnPackageComplete -= ContentPackage_OnPackageComplete;
+        ContentPackage.OnPackageDecisionComplete -= ContentPackage_OnPackageDecisionComplete;
+    }
+
+
+    #region Content Package callbacks 
+    private void ContentPackage_OnPackageComplete(int i)
+    {
+        if (i == pendingPackageId) pendingPackageId = -1;
+        Debug.Log("Package #" + i + " reports finished.");
+    }
+
 
     private void ContentPackage_OnPackageDecisionComplete(int _id, int _choiceIndex)
     {
@@ -75,17 +98,102 @@ public class InkInterface : MonoBehaviour
         }
     }
 
-    private void OnDisable()
+    #endregion
+
+
+    private void Update()
     {
-        ContentPackage.OnPackageComplete -= ContentPackage_OnPackageComplete;
-        ContentPackage.OnPackageDecisionComplete -= ContentPackage_OnPackageDecisionComplete;
+        if(contentPackageQueue.Count == 0)
+        {
+            if (pendingPackageId == -1) LoadContentPackageIntoQueue();
+        }
     }
 
-
-    private void ContentPackage_OnPackageComplete(int i)
+    private void LoadContentPackageIntoQueue()
     {
-        if (i == pendingPackageId) pendingPackageId = -1;
-        Debug.Log("Package #" + i + " reports finished.");
+        int pageDirectorHash = -1;
+        if (currentPageDirector) pageDirectorHash = currentPageDirector.nameToHash;
+        else pageDirectorHash = 0; // TODO get the default page director 
+
+        ContentPackage pkg = new ContentPackage(pageDirectorHash);
+
+        
+        var inkEngineState = inkEngine.GetCurrentState();
+
+        switch (inkEngineState)
+        {
+            case InkEngine.State.Display_Next_Line:
+                {
+                    HandleLoadNarrativeLines(ref pkg);
+                    break;
+                }
+            case InkEngine.State.Choice_Point: pkg.SetPackageType(PackageType.Choice); break;
+            case InkEngine.State.End: return;
+        }
+
+
+
+
+        if (inkEngineState == InkEngine.State.Display_Next_Line) pkg.SetPackageType(PackageType.Narrative);
+        else if(inkEngineState == InkEngine.State.Choice_Point)
+
+
+        if (inkEngine.GetCurrentState() != InkEngine.State.Display_Next_Line)
+        {
+            Debug.Log("NO dialogue to display yet.");
+            NextStep();
+            return;
+        }
+
+        List<InkParagraph> inkPars = new List<InkParagraph>();
+        InkParagraph inkPar;
+        while (inkEngine.GetCurrentState() == InkEngine.State.Display_Next_Line)
+        {
+            inkPar = inkEngine.GetNextLine();
+            inkPars.Add(inkPar);
+
+            if (inkPar.tags.Contains(CustomInterfaceTag)) // Save the custom interaction to our queue and break
+            {
+                customInteractionQueue.Enqueue(inkPar);
+                break;
+            }
+        }
+
+
+    }
+
+    private void HandleLoadNarrativeLines(ref ContentPackage pkg)
+    {
+        pkg.SetPackageType(PackageType.Narrative);
+
+        InkParagraph inkPar;
+        List<InkParagraph> inkPars = new List<InkParagraph>();
+
+        while (inkEngine.GetCurrentState() == InkEngine.State.Display_Next_Line || inkEngine.GetCurrentState() == InkEngine.State.Tags_Only_Line)
+        {
+            inkPar = inkEngine.GetNextLine();
+
+            if (inkPar.tags.Contains(CustomInterfaceTag)) // Save the custom interaction to our queue, change to the new scene director, and break
+            {
+                pendingPackageId = pkg.id;
+                contentPackageQueue.Enqueue(pkg);
+
+
+
+                // 
+                prevPageDirector = currentPageDirector;
+                currentPageDirector = null; //  TODO - get the scene index of the custom interaction
+
+
+                break;
+            }
+            else
+            {
+                inkPars.Add(inkPar);
+            }
+        }
+
+        
     }
 
 
@@ -223,7 +331,7 @@ public class InkInterface : MonoBehaviour
             inkPar = inkEngine.GetNextLine();
             inkPars.Add(inkPar);
 
-            if(inkPar.tags.Contains("customInteraction")) // Save the custom interaction to our queue and break
+            if(inkPar.tags.Contains(CustomInterfaceTag)) // Save the custom interaction to our queue and break
             {
                 customInteractionQueue.Enqueue(inkPar);
                 break;
