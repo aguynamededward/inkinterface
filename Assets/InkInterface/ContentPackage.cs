@@ -135,6 +135,15 @@ public class ContentPackage : IEqualityComparer<ContentPackage>
     {
         id = contentCount++;
         pageHash = _pageHash;
+        packageType = PackageType.Null;
+    }
+
+
+    public ContentPackage(PackageType _packageType)
+    {
+        id = contentCount++;
+        pageHash = -1;
+        packageType = _packageType;
     }
 
     public ContentPackage(int _pageHash, PackageType _packageType)
@@ -143,7 +152,11 @@ public class ContentPackage : IEqualityComparer<ContentPackage>
         pageHash = _pageHash;
         packageType = _packageType;
     }
-
+    
+    public void SetPageHash(int _pageHash)
+    {
+        pageHash = _pageHash;
+    }
     public void SetParagraphList(List<InkParagraph> _parList)
     {
         inkParagraphList = _parList;
@@ -178,6 +191,7 @@ public class ContentPackage : IEqualityComparer<ContentPackage>
 
 
 public enum PackageType { 
+    Null,
     Shutdown,           // Cleanup whatever content you created and get out
     Pause,          // You're done for now, but don't close up shop, we're coming back to you
     Narrative,      // This is just a block of narrative text. The next one may or may not be for you

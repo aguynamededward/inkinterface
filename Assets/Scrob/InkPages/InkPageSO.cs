@@ -66,5 +66,7 @@ public class InkPageSO : ScriptableObject
 
     }
 
+    public static bool CheckPageDirectorExists(int pageHash, out PageDirector existingPageDirector) => VerifyAndHandlePageDirector(pageHash, out existingPageDirector);
+
     #endregion
 }

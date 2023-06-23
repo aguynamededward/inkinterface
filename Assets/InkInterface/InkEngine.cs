@@ -23,7 +23,6 @@ public class InkEngine
     private TextAsset inkJSONAsset;
     private Story story;
 
-    private InkChoicePoint currentChoicePoint;
     private bool isCurrentChoiceInitialized;
 
     private bool isStoryInitialized = false;
@@ -75,15 +74,16 @@ public class InkEngine
         return sentence;
     }
 
-    public InkChoicePoint GetChoices()
+    public void GetChoices(ref ContentPackage choicePackage)
     {
-        if (isStoryInitialized == false || story.currentChoices.Count < 1) return null;
+        if (isStoryInitialized == false || story.currentChoices.Count < 1) return;
+
+        List<InkParagraph> choiceList = new List<InkParagraph>();
 
         if (isCurrentChoiceInitialized == false)
         {
             int totalChoices = story.currentChoices.Count;
 
-            currentChoicePoint = new InkChoicePoint();
             InkParagraph choice;
             int totalTags;
             for (var q = 0; q < totalChoices; q++)
@@ -102,12 +102,10 @@ public class InkEngine
                     }
                 }
 
-                currentChoicePoint.AddChoice(choice);
+                choiceList.Add(choice);
             }
-
-            isCurrentChoiceInitialized = true;
         }
-        return currentChoicePoint;
+        choicePackage.SetParagraphList(choiceList);
     }
 
     public void SelectChoice(int choiceIndex)

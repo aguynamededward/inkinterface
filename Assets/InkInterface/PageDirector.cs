@@ -9,22 +9,27 @@ public class PageDirector : MonoBehaviour
     [SerializeField] private Vector3 originalParentPosition;
     [SerializeField] InkPlayerInput_NarrativeProgression narrativeProgressor;
     [SerializeField] InkPlayerInput_ChoiceProgression choiceProgressor;
-    
 
-    public DataState choiceObjectsAndData { get; protected set; }
-    public DataState narrativeObjectsAndData { get; protected set; }
+
+    public DataState currentPackageDataState { get; protected set; }
+    public DataState nextPackageDataState { get; protected set; }
+
+    private ContentPackage currentPackage;
+    private ContentPackage nextPackage;
 
     protected InputSO input;
     protected InkPageSO sceneSO;
     protected Transform inkTextObjectPrefab;
 
-    public int nameToHash = -1;
-    private int pendingPackageId = -1;
+    protected List<InkTextObject> inkTextObjectList = new List<InkTextObject>();
+    protected List<InkTextObject> inkChoiceObjectList = new List<InkTextObject>();
 
+    public int nameToHash = -1;
+    
     private void Awake()
     {
-        choiceObjectsAndData = DataState.Unintialized;
-        narrativeObjectsAndData = DataState.Unintialized;
+        currentPackageDataState = DataState.Unintialized;
+        nextPackageDataState = DataState.Unintialized;
     }
 
    
@@ -55,5 +60,124 @@ public class PageDirector : MonoBehaviour
     public virtual void AnimateOutAndShutdownScene(InkDelegate.CallbackBool callbackBool)
     {
 
+    }
+
+    public virtual bool TrySendNextPackage(ContentPackage pkg)
+    {
+        if (pkg == currentPackage) return true; // We've already started on this package, but let the Interface know to remove it
+
+        if(currentPackage == null)
+        {
+            currentPackage = pkg;
+            HandleNewPackage(pkg);
+            return true;
+        }
+
+        if(nextPackage == null)
+        {
+            nextPackage = pkg;
+            HandleNewPackage(pkg);
+            return false; // Return false, as we have not yet processed this package
+        }
+
+        return false; // We must be full in current and nextPackage, don't accept this yet
+    }
+
+    protected virtual void HandleNewPackage(ContentPackage pkg)
+    {
+        InkDelegate.CallbackInt setDataStateCallback = null;
+
+        if (pkg == currentPackage) setDataStateCallback = SetCurrentDataStateValue;
+        if (pkg == nextPackage) setDataStateCallback = SetNextDataStateValue;
+
+        switch (pkg.packageType)
+        {
+            case PackageType.Narrative:
+                {
+                    LoadInkParagraphsIntoObjects(pkg.inkParagraphList, setDataStateCallback, inkTextObjectList);
+                    break;
+                }
+            case PackageType.Choice:
+                {
+                    if(inkChoiceObjectList.Count > 0)
+                    {
+                        // clear the inkChoice object list - ideally by calling the choice progressor
+                        inkChoiceObjectList.Clear();
+                    }
+                    LoadInkParagraphsIntoObjects(pkg.inkParagraphList, setDataStateCallback, inkChoiceObjectList);
+                    break;
+                }
+            case PackageType.Pause:
+                {
+
+
+                    break;
+                }
+            case PackageType.Shutdown:
+                {
+                    break;
+                }
+        }
+    } 
+
+    protected virtual IEnumerator LoadInkParagraphsIntoObjects(List<InkParagraph> listOfPars,InkDelegate.CallbackInt setDataStateValue,List<InkTextObject> existingTextObjects)
+    {
+        setDataStateValue((int)DataState.Loading);
+
+        InkTextObject inkTextObj;
+        InkTextObject _prevTextObj = null;
+
+        if (existingTextObjects.Count > 0)
+        {
+            _prevTextObj = existingTextObjects[existingTextObjects.Count - 1];
+        }
+
+        int startingPosition = existingTextObjects.Count;
+
+
+        // TODO -- add a check for ink paragraphs with no text in them - basically skip them. (some inkpars will only have tags)
+        for (var q = 0; q < listOfPars.Count; q++)
+        {
+            yield return 0; // Before anything else - wait a frame. In case the last text object loaded needs time to update
+
+            inkTextObj = ObjectPool<InkTextObject>.GetPoolObject(textSceneParent, inkTextObjectPrefab);
+            existingTextObjects.Add(inkTextObj);
+
+            inkTextObj.Init(listOfPars[q]);
+
+            if (_prevTextObj == null && inkTextObj.IsChoice())
+            {
+                // Because we're a choice, our first position should be under the last bit of text
+                if (existingTextObjects.Count > 0)
+                {
+                    _prevTextObj = existingTextObjects[^1];
+                }
+            }
+
+            if (_prevTextObj != null)
+            {
+                PositionTextObject(inkTextObj, _prevTextObj);
+            }
+
+            _prevTextObj = inkTextObj;
+
+        }
+
+        setDataStateValue((int)DataState.Loading_Complete);
+    }
+
+    protected virtual void PositionTextObject(InkTextObject inkTextObj, InkTextObject _prevTextObj)
+    {
+        inkTextObj.SetLocalPosition(new Vector3(inkTextObj.transform.localPosition.x, _prevTextObj.transform.localPosition.y - _prevTextObj.GetBottomOfText(), inkTextObj.transform.localPosition.z));
+    }
+
+    protected void SetCurrentDataStateValue(int i)
+    {
+        currentPackageDataState = (DataState)i;
+    }
+
+    protected void SetNextDataStateValue(int i)
+    {
+        nextPackageDataState = (DataState)i;
     }
 }

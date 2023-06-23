@@ -7,7 +7,8 @@ public enum DataState
 {
     Unintialized,   // Unloaded state, or after we've completed a dialogue run and are waiting for input
     Loading,        // Currently loading dialogue objects in the background
-    Complete        // All dialogue objects loaded, waiting for end of dialogue run
+    Loading_Complete,        // All dialogue objects loaded, waiting for end of dialogue run
+    Waiting_For_Player_To_Finish // We've sent the package to the progressor, we're just waiting for it to be done.
 }
 public class InkInterface : MonoBehaviour
 {
@@ -103,10 +104,51 @@ public class InkInterface : MonoBehaviour
 
     private void Update()
     {
-        if(contentPackageQueue.Count == 0)
+        HandlePackageLoading();
+
+        HandlePackageDelivery();
+    }
+
+    private void HandlePackageLoading()
+    {
+        // Loading content packages
+        if (contentPackageQueue.Count == 0)
         {
             if (pendingPackageId == -1) LoadContentPackageIntoQueue();
         }
+    }
+
+    private void HandlePackageDelivery()
+    {
+        if (contentPackageQueue.Count <= 0) return;
+
+        ContentPackage currentPkg = contentPackageQueue.Peek();
+
+        // Are we waiting on a package to finish?
+        if (pendingPackageId == -1 || 
+            (pendingPackageId != -1 && currentPkg.id == pendingPackageId)) // If we're waiting, do we still have the awaited package in the queue?
+        {
+            if (TrySendNextPackage(currentPkg))
+            {
+                contentPackageQueue.Dequeue();
+            }
+        }
+    }
+
+    private bool TrySendNextPackage(ContentPackage currentPkg)
+    {
+        if(currentPkg.pageHash == -1)
+        {
+            Debug.Log("InkInterface: currentPkg #" + currentPkg.id + " pageHash is -1. Returning TRUE, because there's an error somewhere, but we need to get rid of this package.");
+            return true;
+        }
+
+        if(InkPageSO.CheckPageDirectorExists(currentPkg.pageHash,out PageDirector recipient))
+        {
+            return recipient.TrySendNextPackage(currentPkg);
+        }
+
+        return false;
     }
 
     private void LoadContentPackageIntoQueue()
@@ -116,7 +158,6 @@ public class InkInterface : MonoBehaviour
         else pageDirectorHash = 0; // TODO get the default page director 
 
         ContentPackage pkg = new ContentPackage(pageDirectorHash);
-
         
         var inkEngineState = inkEngine.GetCurrentState();
 
@@ -127,38 +168,16 @@ public class InkInterface : MonoBehaviour
                     HandleLoadNarrativeLines(ref pkg);
                     break;
                 }
-            case InkEngine.State.Choice_Point: pkg.SetPackageType(PackageType.Choice); break;
+            case InkEngine.State.Choice_Point:
+                {
+                    //pkg.SetPackageType(PackageType.Choice); 
+                    inkEngine.GetChoices(ref pkg);
+                    contentPackageQueue.Enqueue(pkg);
+                    pendingPackageId = pkg.id;
+                    break;
+                }
             case InkEngine.State.End: return;
         }
-
-
-
-
-        if (inkEngineState == InkEngine.State.Display_Next_Line) pkg.SetPackageType(PackageType.Narrative);
-        else if(inkEngineState == InkEngine.State.Choice_Point)
-
-
-        if (inkEngine.GetCurrentState() != InkEngine.State.Display_Next_Line)
-        {
-            Debug.Log("NO dialogue to display yet.");
-            NextStep();
-            return;
-        }
-
-        List<InkParagraph> inkPars = new List<InkParagraph>();
-        InkParagraph inkPar;
-        while (inkEngine.GetCurrentState() == InkEngine.State.Display_Next_Line)
-        {
-            inkPar = inkEngine.GetNextLine();
-            inkPars.Add(inkPar);
-
-            if (inkPar.tags.Contains(CustomInterfaceTag)) // Save the custom interaction to our queue and break
-            {
-                customInteractionQueue.Enqueue(inkPar);
-                break;
-            }
-        }
-
 
     }
 
@@ -168,32 +187,40 @@ public class InkInterface : MonoBehaviour
 
         InkParagraph inkPar;
         List<InkParagraph> inkPars = new List<InkParagraph>();
-
+        bool hasNewScene;
         while (inkEngine.GetCurrentState() == InkEngine.State.Display_Next_Line || inkEngine.GetCurrentState() == InkEngine.State.Tags_Only_Line)
         {
             inkPar = inkEngine.GetNextLine();
+            hasNewScene = inkPar.tags.Contains(NewSceneTag);
 
-            if (inkPar.tags.Contains(CustomInterfaceTag)) // Save the custom interaction to our queue, change to the new scene director, and break
+            if (hasNewScene) 
             {
-                pendingPackageId = pkg.id;
+                pkg.SetParagraphList(inkPars);
                 contentPackageQueue.Enqueue(pkg);
 
+                ContentPackage stopPkg = new ContentPackage(currentPageDirector.nameToHash, PackageType.Pause);
+                contentPackageQueue.Enqueue(stopPkg);
+                pendingPackageId = stopPkg.id;
 
 
-                // 
                 prevPageDirector = currentPageDirector;
-                currentPageDirector = null; //  TODO - get the scene index of the custom interaction
+                currentPageDirector = null; //  TODO - get the new scene
 
+                inkPars = new List<InkParagraph>();
+                inkPars.Add(inkPar);
+                pkg = new ContentPackage(currentPageDirector.nameToHash, PackageType.Narrative);
 
                 break;
             }
+            // TODO: Custom interface - Save the custom interaction to our queue, change to the new scene director, and break
             else
             {
                 inkPars.Add(inkPar);
             }
         }
 
-        
+        pkg.SetParagraphList(inkPars);
+        contentPackageQueue.Enqueue(pkg);
     }
 
 
@@ -213,10 +240,7 @@ public class InkInterface : MonoBehaviour
 
     
 
-    int currentPage = -1;       // Who are we currently feeding content to?
-    int previousPage = -1;      
-
-
+   
     InkTextObject selectedChoice;
 
     public void NextStep()
@@ -244,7 +268,7 @@ public class InkInterface : MonoBehaviour
         {
             case InkEngine.State.Display_Next_Line:
                 {
-                    if (!currentPageDirector || currentPageDirector.narrativeObjectsAndData == DataState.Unintialized)
+                    if (!currentPageDirector || currentPageDirector.nextPackageDataState == DataState.Unintialized)
                     {
                         state = State.Loading_Narrative;
                         LoadAllAvailableNarrativeLines();
@@ -272,10 +296,10 @@ public class InkInterface : MonoBehaviour
 
         //textDirector.ClearChoicePoint();
 
-        List<InkParagraph> choices = inkEngine.GetChoices()?.GetListOfChoices();
-        if (choices == null) { Debug.LogWarning("Error: No choices available."); return; }
-
-        textDirector.LoadChoices(choices, ChoiceLoadCompleteCallback);
+        //List<InkParagraph> choices = inkEngine.GetChoices()?.GetListOfChoices();
+        //if (choices == null) { Debug.LogWarning("Error: No choices available."); return; }
+        //
+        //textDirector.LoadChoices(choices, ChoiceLoadCompleteCallback);
 
     }
 

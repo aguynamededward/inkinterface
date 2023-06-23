@@ -124,7 +124,7 @@ public class TextDirector : MonoBehaviour
             
         }
 
-        setDataStateValue((int)DataState.Complete);
+        setDataStateValue((int)DataState.Loading_Complete);
 
         callback?.Invoke(startingPosition);
     }
@@ -171,7 +171,7 @@ public class TextDirector : MonoBehaviour
 
     public List<InkTextObject> GetNarrativeObjects()
     {
-        if (narrativeObjectsAndData == DataState.Complete) return inkTextObjects;
+        if (narrativeObjectsAndData == DataState.Loading_Complete) return inkTextObjects;
         else return null;
     }
 
@@ -182,7 +182,7 @@ public class TextDirector : MonoBehaviour
 
     public List<InkTextObject> GetChoiceObjects()
     {
-        if (choiceObjectsAndData == DataState.Complete) return inkChoiceObjects;
+        if (choiceObjectsAndData == DataState.Loading_Complete) return inkChoiceObjects;
         else return null;
     }
     private void PositionTextObject(InkTextObject inkTextObj, InkTextObject _prevTextObj)
