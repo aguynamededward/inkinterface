@@ -8,7 +8,7 @@ public class InkPlayerInput_NarrativeProgression : InputSOReceiver
     public bool activated = false;
 
     List<InkTextObject> inkTextObjects;
-    int currentDialogueIndex = 0;
+    int currentDialogueIndex = -1;
     
 
     InkDelegate.Callback callbackOnNarrativeComplete;
@@ -20,8 +20,9 @@ public class InkPlayerInput_NarrativeProgression : InputSOReceiver
         callbackOnNarrativeComplete = _onCompleteCallback;
         callbackOnNarrativeProgression = _onChangeCallback;
 
-        currentDialogueIndex = startingIndex - 1;
-        
+        // If we're already on the provided starting index, it means we're ready to go to the next line right away. Otherwise, start one before the starting index, so we roll into it.
+        if(currentDialogueIndex != startingIndex) currentDialogueIndex = startingIndex - 1;
+
         activated = true;
 
         ShowNextLineOfDialogue();
@@ -29,7 +30,7 @@ public class InkPlayerInput_NarrativeProgression : InputSOReceiver
 
     protected virtual void ShowNextLineOfDialogue()
     {
-        Debug.Log("DialogueProgression: Show NextLineOfDialogue");
+        if (input.enableDebugMessages) Debug.Log("DialogueProgression: Show NextLineOfDialogue");
         if(currentDialogueIndex >= inkTextObjects.Count - 1)
         {
             // We're at the end, return the callback
@@ -45,13 +46,13 @@ public class InkPlayerInput_NarrativeProgression : InputSOReceiver
     
     private void CompleteDialogueDisplay()
     {
-        Debug.Log("DialogueProgression: CompleteDialogueDisplay - finished dialogue, running callback");
+        if (input.enableDebugMessages) Debug.Log("DialogueProgression: CompleteDialogueDisplay - finished dialogue, running callback");
         activated = false;
         callbackOnNarrativeComplete?.Invoke();
     }
     public override void OnInputEnd(object sendingSO, InputSOData _input)
     {
-        Debug.Log("DialogueProgression: OnInputEnd - Received click. activated: " + activated + " | clickSafe: " + _input.clickSafe + " | clickActivationTime: " + input.clickProtectionTimeStamp);
+        if (input.enableDebugMessages) Debug.Log("DialogueProgression: OnInputEnd - Received click. activated: " + activated + " | clickSafe: " + _input.clickSafe + " | clickActivationTime: " + input.clickProtectionTimeStamp);
         if (!activated) return;
         if (!_input.clickSafe) return;
 

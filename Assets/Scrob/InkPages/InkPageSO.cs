@@ -14,17 +14,24 @@ public class InkPageSO : ScriptableObject
     [System.NonSerialized]
     public int nameToHash;
 
-    private void Awake()
+    private void OnEnable()
     {
-        nameToHash = name.GetHashCode();
+        Debug.Log(name + " scrob just ran OnEnable.");
+        nameToHash = name.ToLower().GetHashCode();
         if (!inkPageReference.ContainsKey(nameToHash)) inkPageReference.Add(nameToHash, this);
     }
 
+    private void OnDisable()
+    {
+        if (inkPageReference.ContainsKey(nameToHash)) inkPageReference.Remove(nameToHash);
+    }
 
     #region Static elements
 
     public static Dictionary<int, InkPageSO> inkPageReference = new Dictionary<int, InkPageSO>();
     public static Dictionary<int, PageDirector> pageDirectorDictionary = new Dictionary<int, PageDirector>();
+
+    public static PageDirector InstantiatePage(string inkPageName,Vector3 instantiationPosition, Quaternion instantiateRotation, InputSO inputSO) => InstantiatePage(inkPageName.ToLower().GetHashCode(), instantiationPosition, instantiateRotation, inputSO);
 
     public static PageDirector InstantiatePage(int inkPageHash, Vector3 instantiationPosition, Quaternion instantiateRotation, InputSO inputSO)
     {

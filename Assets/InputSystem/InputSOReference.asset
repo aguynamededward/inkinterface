@@ -12,4 +12,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1532ec37bc3148a48b6418646d04d19c, type: 3}
   m_Name: InputSOReference
   m_EditorClassIdentifier: 
-  defaultCameraDistance: 17
+  enableDebugMessages: 0
+  clickProtectionDelay: 0.5
+  clickProtectionTimeStamp: 0

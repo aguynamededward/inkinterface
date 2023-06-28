@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 0}
-  m_IndirectSpecularColor: {r: 0.18028378, g: 0.22571412, b: 0.30692285, a: 1}
+  m_IndirectSpecularColor: {r: 0.12731749, g: 0.13414757, b: 0.1210787, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -396,7 +396,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!108 &410087040
 Light:
   m_ObjectHideFlags: 0
@@ -970,7 +970,7 @@ GameObject:
   - component: {fileID: 1374961970}
   - component: {fileID: 1374961975}
   m_Layer: 5
-  m_Name: TouchCanvas
+  m_Name: TouchInputCanvas
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1346,12 +1346,12 @@ GameObject:
   - component: {fileID: 1654821447}
   - component: {fileID: 1654821448}
   m_Layer: 0
-  m_Name: TempInterface
+  m_Name: InkInterface
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &1654821445
 Transform:
   m_ObjectHideFlags: 0
@@ -1384,7 +1384,16 @@ MonoBehaviour:
   dialogueProgressor: {fileID: 1654821447}
   choiceProgressor: {fileID: 1654821448}
   textDirector: {fileID: 1134979112}
-  sceneDirector: {fileID: 0}
+  inputScrob: {fileID: 11400000, guid: e68e0e1edbaa74c48b2925f870f2fadd, type: 2}
+  defaultPageDirectorSO: {fileID: 11400000, guid: a974135da983f0b408d7cda6eb497c2a,
+    type: 2}
+  pageBackgroundDepth: 20
+  pageTextDepth: 19
+  CustomInterfaceTag: {fileID: 0}
+  NewSceneTag: {fileID: 0}
+  currentPageDirector: {fileID: 0}
+  prevPageDirector: {fileID: 0}
+  defaultPageDirector: {fileID: 0}
 --- !u!114 &1654821447
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1426,6 +1435,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Name
       value: SwipePageParent
+      objectReference: {fileID: 0}
+    - target: {fileID: 1015599032804014245, guid: b07f7e98afbca8248b15bb98d8e64039,
+        type: 3}
+      propertyPath: m_IsActive
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 5315785136782774849, guid: b07f7e98afbca8248b15bb98d8e64039,
         type: 3}

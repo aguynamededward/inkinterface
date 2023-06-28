@@ -32,6 +32,7 @@ public class InputSO : ScriptableObject
     /// </summary>
     public EventHandler<InputSOData> OnInputMouseOver;
 
+    [SerializeField] public bool enableDebugMessages = false;
     [SerializeField] float clickProtectionDelay = 0.5f;
 
     public float clickProtectionTimeStamp = 0f;
@@ -56,7 +57,7 @@ public class InputSO : ScriptableObject
 
     private void OnEnable()
     {
-        Debug.Log("InputSO: OnEnable - Click Timestamp" + clickProtectionTimeStamp);
+        if(enableDebugMessages) Debug.Log("InputSO: OnEnable - Click Timestamp" + clickProtectionTimeStamp);
         clickProtectionTimeStamp = 0f;
     }
 
@@ -113,7 +114,7 @@ public class InputSO : ScriptableObject
 
     public void ActivateClickProtection()
     {
-        Debug.Log("InputSO: ActivateClickProtection");
+        if (enableDebugMessages) Debug.Log("InputSO: ActivateClickProtection");
         clickProtectionTimeStamp = Time.time;
     }
 

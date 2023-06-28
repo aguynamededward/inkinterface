@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using DG.Tweening;
 
 public class PageDirector : MonoBehaviour
 {
@@ -21,8 +22,11 @@ public class PageDirector : MonoBehaviour
     protected InkPageSO sceneSO;
     protected Transform inkTextObjectPrefab;
 
+
+
     protected List<InkTextObject> inkTextObjectList = new List<InkTextObject>();
     protected List<InkTextObject> inkChoiceObjectList = new List<InkTextObject>();
+    protected int currentIndex = 0;
 
     public int nameToHash = -1;
     
@@ -32,7 +36,99 @@ public class PageDirector : MonoBehaviour
         nextPackageDataState = DataState.Unintialized;
     }
 
-   
+   public virtual void Update()
+    {
+        HandleCurrentPackage();
+
+        if (currentPackageDataState == DataState.Unintialized) HandleNextPackage();
+        
+    }
+
+
+    protected virtual void HandleNextPackage()
+    {
+        if (currentPackageDataState != DataState.Unintialized) return;
+        if (nextPackageDataState == DataState.Unintialized || nextPackageDataState == DataState.Loading) return;
+
+        currentPackage = nextPackage;
+        currentPackageDataState = nextPackageDataState;
+
+        nextPackage = null;
+        nextPackageDataState = DataState.Unintialized;
+    }
+
+    protected virtual void HandleCurrentPackage()
+    {
+        if (currentPackageDataState == DataState.Unintialized) return;
+
+        if(currentPackageDataState == DataState.Loading_Complete) HandleCurrentPackageLoadingComplete();
+        
+    }
+
+    private void HandleCurrentPackageLoadingComplete()
+    {
+        switch(currentPackage.packageType)
+        {
+            case PackageType.Narrative:
+                narrativeProgressor.Init(inkTextObjectList, currentIndex, ShowNarrativeAtIndex, OnCurrentPackageComplete);
+                currentPackageDataState = DataState.Waiting_For_Player_To_Finish;
+                break;
+            case PackageType.Choice:
+                PositionChoiceObjects(inkChoiceObjectList,inkTextObjectList[currentIndex]);
+                FocusOnTextObject(inkChoiceObjectList[0]);
+                choiceProgressor.SetupChoiceMoment(inkChoiceObjectList, OnCurrentPackageCompleteChoice);
+                currentPackageDataState = DataState.Waiting_For_Player_To_Finish;
+                break;
+        }
+    }
+
+    private void PositionChoiceObjects(List<InkTextObject> inkChoiceObjectList, InkTextObject prevTextObject)
+    {
+        foreach(InkTextObject ito in inkChoiceObjectList)
+        {
+            PositionTextObject(ito, prevTextObject);
+            prevTextObject = ito;
+        }
+    }
+
+    protected virtual void OnCurrentPackageCompleteChoice(int _choiceIndex)
+    {
+        currentPackageDataState = DataState.Unintialized;
+        currentPackage.FinishChoiceCallback(_choiceIndex);
+        currentPackage = null;
+        ClearChoices();
+    }
+
+    protected virtual void OnCurrentPackageComplete()
+    {
+        currentPackageDataState = DataState.Unintialized;
+        currentPackage.FinishCallback();
+        currentPackage = null;
+    }
+
+    protected virtual void ClearChoices()
+    {
+        ObjectPool<InkTextObject>.ReturnAllListItemsToPool(inkChoiceObjectList);
+
+    }
+
+    private void ShowNarrativeAtIndex(int i)
+    {
+        if (i >= inkTextObjectList.Count)
+        {
+            Debug.Log("Attempted to show narrative at index " + i + " - outside of range!", gameObject);
+            return;
+        }
+
+        inkTextObjectList[i].ShowText();
+        currentIndex = i;
+        FocusOnTextObject(inkTextObjectList[i]);
+    }
+
+    public void FocusOnTextObject(InkTextObject ito)
+    {
+        textSceneParent.transform.DOMove(new Vector3(originalParentPosition.x, originalParentPosition.y - ito.transform.localPosition.y,originalParentPosition.z),1f);
+    }
 
     public virtual void SetupScene(InkPageSO _sceneSO, InputSO _input) {
 
@@ -51,6 +147,10 @@ public class PageDirector : MonoBehaviour
         if(choiceProgressor) choiceProgressor.RegisterInput(_input);
         else Debug.Log("PAGE DIRECTOR: No choice progressor assigned!!");
 
+        float textParentZPosition = WorldInterface.ScreenSpaceToWorldSpaceAtDepth(new Vector2(Screen.width * 0.5f, Screen.height * 0.5f), WorldDepth.Text).z;
+
+        textSceneParent.position = new Vector3(textSceneParent.position.x, textSceneParent.position.y, textParentZPosition);
+        originalParentPosition.z = textParentZPosition;
     }
 
     public virtual void AnimateInAndStartScene()
@@ -94,7 +194,7 @@ public class PageDirector : MonoBehaviour
         {
             case PackageType.Narrative:
                 {
-                    LoadInkParagraphsIntoObjects(pkg.inkParagraphList, setDataStateCallback, inkTextObjectList);
+                    StartCoroutine(LoadInkParagraphsIntoObjects(pkg.inkParagraphList, setDataStateCallback, inkTextObjectList));
                     break;
                 }
             case PackageType.Choice:
@@ -104,7 +204,7 @@ public class PageDirector : MonoBehaviour
                         // clear the inkChoice object list - ideally by calling the choice progressor
                         inkChoiceObjectList.Clear();
                     }
-                    LoadInkParagraphsIntoObjects(pkg.inkParagraphList, setDataStateCallback, inkChoiceObjectList);
+                    StartCoroutine(LoadInkParagraphsIntoObjects(pkg.inkParagraphList, setDataStateCallback, inkChoiceObjectList));
                     break;
                 }
             case PackageType.Pause:

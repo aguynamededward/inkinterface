@@ -108,6 +108,11 @@ public class InkEngine
         choicePackage.SetParagraphList(choiceList);
     }
 
+    public int GetChoiceTotal()
+    {
+        return story.currentChoices.Count;
+    }
+
     public void SelectChoice(int choiceIndex)
     {
         if (isStoryInitialized == false || story.currentChoices.Count < 1) { Debug.Log("Story not initialized."); return; };

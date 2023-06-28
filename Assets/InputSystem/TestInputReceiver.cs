@@ -25,7 +25,7 @@ public class TestInputReceiver : InputSOReceiver
         transform.position = FormatMousePositionToWorldPosition(e.position);
         
         endPos = WorldInterface.ScreenSpaceToWorldSpaceAtDepth(e.position, WorldDepth.Text);
-        Debug.Log("End Pos: " + endPos);
+        if (input.enableDebugMessages) Debug.Log("End Pos: " + endPos);
 
         lastPosition = e.position;
     }
@@ -69,7 +69,7 @@ public class TestInputReceiver : InputSOReceiver
         meshRenderer.material.color = Color.green;
         transform.position = FormatMousePositionToWorldPosition(e.position);
         startPos = WorldInterface.ScreenSpaceToWorldSpaceAtDepth(e.position, WorldDepth.Text);
-        Debug.Log("Start Pos: " + startPos);
+        if (input.enableDebugMessages)  Debug.Log("Start Pos: " + startPos);
     }
 
 
