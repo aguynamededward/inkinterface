@@ -17,13 +17,35 @@ public static class InkTags
     }
 
     
-    public static InkTagSO ParseTags(string rawTag)
+    public static InkTagSO ParseTag(string rawTag)
     {
-        // Parse through all the possible tags, store them in the inkPar
+        // Parse through all the possible tags, return the InkTag
         rawTag = rawTag.ToLower();
-        if (tagDictionary.ContainsKey(rawTag)) return tagDictionary[rawTag];
+        string tagData = "";
+        int indexOfColon = rawTag.IndexOf(":");
+        
+        if (indexOfColon > 0)
+        {
+            tagData = rawTag.Substring(indexOfColon + 1);
+            rawTag = rawTag.Substring(0, indexOfColon);
+        }
+
+        if (tagDictionary.ContainsKey(rawTag))
+        {
+            InkTagSO tag = tagDictionary[rawTag];
+
+            return tag;
+        }
+
         else return null;
     }
 
 
+}
+
+
+public struct InkTag
+{
+    public InkTagSO tag;
+    public string tagData;
 }

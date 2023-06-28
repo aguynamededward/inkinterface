@@ -63,7 +63,7 @@ public class InkEngine
             InkTagSO tagSO;
             for (var q = 0; q < totalTags; q++)
             {
-                tagSO = InkTags.ParseTags(story.currentTags[q]);
+                tagSO = InkTags.ParseTag(story.currentTags[q]);
                 if(tagSO != null ) sentence.AddTag(tagSO);
             }
         }
@@ -97,7 +97,7 @@ public class InkEngine
 
                     for (var j = 0; j < totalTags; j++)
                     {
-                        inkTag = InkTags.ParseTags(story.currentChoices[q].tags[j]);
+                        inkTag = InkTags.ParseTag(story.currentChoices[q].tags[j]);
                         if(inkTag != null) choice.AddTag(inkTag);
                     }
                 }

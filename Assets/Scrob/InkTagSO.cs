@@ -5,10 +5,14 @@ using UnityEngine;
 [CreateAssetMenu(fileName = "New InkTagSO", menuName = "InkTag")]
 public class InkTagSO : ScriptableObject
 {
-    private void Awake()
+    protected virtual void OnEnable()
     {
-        InkTags.AddTag(name.ToLower(), this);
+        if(!InkTags.tagDictionary.ContainsKey(name.ToLower())) InkTags.AddTag(name.ToLower(),this);
     }
 
+    protected virtual void ParseTagData(string _tagData)
+    {
+
+    }
 
 }
